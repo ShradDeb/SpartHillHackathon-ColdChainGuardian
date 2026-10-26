@@ -1,0 +1,2371 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div style="position:relative;z-index:100;background:#fff2d8;color:#594321;padding:12px 18px;font:13px/1.5 system-ui;border-bottom:1px solid #e4c98c"><a href="/#response" style="color:#154e75;font-weight:600">← Back to ColdChain Guardian</a> &nbsp; Hayden’s FrostGate · AWS hackathon edition. Simulation preview; hardware is not activated by opening this page. Embedded AWS credentials cleared. Live Bedrock requires configuration. Engineering estimates are not validated medicine-storage instructions.</div><title>FrostGate Console (hackathon)</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&family=Roboto+Mono:wght@500&display=swap">
+<style>
+/* Layout: admin-panel shell — dark rail on the left, white instrument cards on a cool grey field. */
+:root{
+  --bg:#edf0f5; --surface:#ffffff; --surface2:#f6f8fb; --fg:#1d2433; --muted:#667085; --line:#dfe4ec;
+  --side:#1c2230; --side2:#262e3f; --side-fg:#c3cad8; --side-dim:#7f899c;
+  --accent:#3b6ce6; --ice:#139bc4; --warm:#ee8722; --amb:#8b61e8; --ok:#1f9d5a; --bad:#de3d43;
+  --font:"Rubik",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"Roboto Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:6px; --shadow:0 1px 2px rgba(20,30,50,.06),0 1px 8px rgba(20,30,50,.04);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11151c; --surface:#19202a; --surface2:#1f2733; --fg:#e5e9f0; --muted:#8f99ab; --line:#2a3242;
+  --side:#0c1016; --side2:#171d27; --side-fg:#c3cad8; --side-dim:#6f798c;
+  --accent:#6d93f5; --ice:#3cc0e6; --warm:#f5a04f; --amb:#a888f3; --ok:#3cc47c; --bad:#f06a6f;
+  --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151c; --surface:#19202a; --surface2:#1f2733; --fg:#e5e9f0; --muted:#8f99ab; --line:#2a3242;
+  --side:#0c1016; --side2:#171d27; --side-fg:#c3cad8; --side-dim:#6f798c;
+  --accent:#6d93f5; --ice:#3cc0e6; --warm:#f5a04f; --amb:#a888f3; --ok:#3cc47c; --bad:#f06a6f;
+  --shadow:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;font-weight:500;text-wrap:balance}
+
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+/* ---- sidebar ---- */
+.side{background:var(--side);color:var(--side-fg);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding-left:env(safe-area-inset-left,0px)}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 16px;font-weight:600;letter-spacing:.14em;font-size:17px;color:#fff;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand svg{width:22px;height:22px;color:var(--ice)}
+.nav{display:flex;flex-direction:column;padding:8px 0;flex:1}
+.nav a{display:grid;grid-template-columns:20px 1fr;gap:4px 12px;padding:11px 18px;color:var(--side-fg);text-decoration:none;border-left:3px solid transparent}
+.nav a svg{width:18px;height:18px;grid-row:span 2;margin-top:1px;color:var(--side-dim)}
+.nav a b{font-weight:500;color:#e8ecf3}
+.nav a small{color:var(--side-dim);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav a:hover{background:var(--side2)}
+.nav a.on{background:var(--side2);border-left-color:var(--accent)}
+.nav a.on svg{color:var(--accent)}
+.nav a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.side-foot{margin:12px;padding:12px;border-radius:var(--r);background:var(--side2);font-size:12.5px}
+.side-foot .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--side-dim);margin-right:6px}
+.dot.on{background:var(--ok)} .dot.warn{background:var(--warm)}
+
+/* ---- main ---- */
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.seg{display:inline-flex;background:var(--surface2);border:1px solid var(--line);border-radius:var(--r);padding:2px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:4px;cursor:pointer;color:var(--muted);font-weight:500}
+.seg button.on{background:var(--surface);color:var(--accent);box-shadow:var(--shadow)}
+.seg button:focus-visible{outline:2px solid var(--accent)}
+.spacer{flex:1}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:var(--r);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08);color:#fff}
+.btn.small{padding:4px 9px;font-size:12.5px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn svg{width:15px;height:15px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:500;background:var(--surface2);border:1px solid var(--line);color:var(--muted)}
+.chip.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.chip.warn{color:var(--warm);border-color:color-mix(in srgb,var(--warm) 35%,transparent);background:color-mix(in srgb,var(--warm) 10%,transparent)}
+.chip.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,transparent);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.chip.cold{color:var(--ice);border-color:color-mix(in srgb,var(--ice) 35%,transparent);background:color-mix(in srgb,var(--ice) 10%,transparent)}
+
+.wrap{padding-block:24px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px;max-width:1240px;width:100%;margin:0 auto}
+.hello h1{font-size:26px}
+.hello p{margin:4px 0 0;color:var(--muted)}
+.hello p b{color:var(--fg);font-weight:500}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);border:1px solid var(--line);padding:18px;min-width:0}
+.card h2{font-size:16px;margin-bottom:2px}
+.card .sub{color:var(--muted);font-size:12.5px}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.span2{grid-column:span 2}.span3{grid-column:span 3}
+
+/* stat tiles (like the reference quick-stats strip) */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{display:flex;align-items:center;gap:14px;min-width:0}
+.ic{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center}
+.ic svg{width:22px;height:22px}
+.ic.ice{background:color-mix(in srgb,var(--ice) 14%,transparent);color:var(--ice)}
+.ic.warm{background:color-mix(in srgb,var(--warm) 14%,transparent);color:var(--warm)}
+.ic.amb{background:color-mix(in srgb,var(--amb) 14%,transparent);color:var(--amb)}
+.ic.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.ic.blue{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+.stat .v{font-size:22px;font-weight:600;font-family:var(--mono);font-variant-numeric:tabular-nums;line-height:1.1}
+.stat .v small{font-size:13px;color:var(--muted);font-weight:500}
+.stat .l{color:var(--muted);font-size:13px}
+.divide{border-top:1px solid var(--line);margin:16px 0}
+.mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px 18px}
+.mini div{display:flex;flex-direction:column;min-width:0}
+.mini span{color:var(--muted);font-size:12px}
+.mini b{font-weight:500;font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* fuel bar */
+.big{font-size:40px;font-weight:500;font-family:var(--mono);font-variant-numeric:tabular-nums;line-height:1}
+.big small{font-size:16px;color:var(--muted)}
+.bar{height:16px;border-radius:99px;background:var(--surface2);border:1px solid var(--line);overflow:hidden;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,color-mix(in srgb,var(--ice) 70%,#fff),var(--ice));border-radius:99px;transition:width .4s}
+.bar.low i{background:var(--warm)} .bar.empty i{background:var(--bad)}
+.bar-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:6px}
+.donut{display:block;margin:4px auto 8px;width:150px;height:150px}
+.legend{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;background:var(--c);vertical-align:-1px}
+
+canvas.chart{width:100%;height:280px;display:block}
+canvas.chart.short{height:220px}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.chart-legend span::before{content:"";display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;background:var(--c);vertical-align:3px}
+.chart-legend .band::before{height:10px;vertical-align:-1px;background:color-mix(in srgb,var(--ok) 25%,transparent)}
+.chart-legend .gate::before{height:10px;vertical-align:-1px;background:color-mix(in srgb,var(--accent) 16%,transparent)}
+
+.gate-vis{display:flex;align-items:center;gap:14px}
+.gate-vis svg{width:84px;height:84px;flex:none}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.kv span{color:var(--muted)} .kv b{font-weight:500;font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.log{max-height:220px;overflow:auto;font-size:12.5px;display:flex;flex-direction:column;gap:6px}
+.log div{display:grid;grid-template-columns:68px 1fr;gap:8px;color:var(--fg)}
+.log time{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+
+/* forms */
+.form{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px 16px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.02em}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--surface2);border-radius:var(--r);padding:7px 9px;width:100%;min-width:0}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 45%,transparent);border-color:var(--accent)}
+.f .hint{font-size:11.5px;color:var(--muted)}
+.f.warn input{border-color:var(--warm)}
+.f.err input{border-color:var(--bad)}
+.check{display:flex;align-items:center;gap:8px;font-size:13px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.callout{border:1px solid var(--line);background:var(--surface2);border-radius:var(--r);padding:10px 12px;font-size:13px}
+.callout.warn{border-color:color-mix(in srgb,var(--warm) 45%,transparent);background:color-mix(in srgb,var(--warm) 8%,var(--surface))}
+.callout.bad{border-color:color-mix(in srgb,var(--bad) 45%,transparent);background:color-mix(in srgb,var(--bad) 8%,var(--surface))}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+td,th{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:500;font-size:12px}
+td.r,th.r{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr.total td{font-weight:600;border-bottom:0}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:16px;text-align:center;color:var(--muted);cursor:pointer;display:block}
+.drop:hover,.drop.over{border-color:var(--accent);color:var(--accent)}
+.drop img{max-height:140px;border-radius:4px;display:block;margin:0 auto 8px}
+.ai-out{font-size:13px}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--surface);padding:10px 14px;border-radius:var(--r);font-size:13px;max-width:min(380px,calc(100vw - 32px));z-index:20;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.wiring{overflow-x:auto}
+.wiring svg{min-width:640px;width:100%;height:auto}
+.wiring text{font-family:var(--font);font-size:12px;fill:var(--fg)}
+.wiring .muted{fill:var(--muted)}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+code{font-family:var(--mono);font-size:12px;background:var(--surface2);border:1px solid var(--line);padding:1px 5px;border-radius:4px}
+
+.devs{display:flex;flex-direction:column;gap:12px}
+.dev{border:1px solid var(--line);border-radius:var(--r);padding:12px;background:var(--surface2);display:flex;flex-direction:column;gap:10px}
+.dev .f input,.dev .f select{background:var(--surface)}
+.dev-head{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:flex-end}
+.dev-head .f{width:190px}
+.dev-actions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+table.sens{background:var(--surface);border-radius:var(--r)}
+table.sens select,table.sens input{border:1px solid var(--line);background:var(--surface2);border-radius:4px;padding:5px 7px;width:100%;min-width:0}
+table.sens input.addr{min-width:180px;letter-spacing:.04em}
+table.sens td{vertical-align:middle}
+.step-tools{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;border-top:1px dashed var(--line);padding-top:10px}
+.step-tools .note:last-child{flex-basis:100%}
+.shaft{display:flex;align-items:center;gap:12px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line)}
+.shaft svg{width:56px;height:56px;flex:none}
+pre.snippet{margin:0;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.5;background:var(--surface2);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;white-space:pre}
+canvas.cooler{width:100%;height:380px;display:block}
+canvas.cooler.big{height:560px}
+.cutaway{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+.cut-side{min-width:0}
+.lib{display:flex;flex-direction:column;gap:6px}
+.lib-h{font-size:13px;font-weight:500;color:var(--muted);margin:10px 0 6px;text-transform:uppercase;letter-spacing:.06em}
+.lib-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface2)}
+.lib-row div{display:flex;flex-direction:column;min-width:0}
+.lib-row b{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
+.plan-stat{border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;background:var(--surface2);display:flex;flex-direction:column;gap:2px;min-width:0}
+.plan-stat span{font-size:12px;color:var(--muted)}
+.plan-stat b{font-family:var(--mono);font-size:18px;font-weight:500;font-variant-numeric:tabular-nums}
+.plan-stat small{font-size:12px;color:var(--muted)}
+#planOut .callout{margin-top:8px}
+.advice{white-space:pre-wrap;margin-top:12px;border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);background:color-mix(in srgb,var(--accent) 6%,var(--surface));border-radius:var(--r);padding:12px 14px;line-height:1.6}
+.leakbar{position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--ok) 30%,transparent),color-mix(in srgb,var(--warm) 30%,transparent) 64%,color-mix(in srgb,var(--bad) 35%,transparent));margin:16px 0 18px}
+.leakbar i{position:absolute;inset:0 auto 0 0;border-radius:99px;border-right:3px solid var(--fg);background:transparent;transition:width .4s}
+.leakbar span{position:absolute;top:13px;transform:translateX(-50%);font-size:11px;color:var(--muted);white-space:nowrap}
+.leakbar span:last-child{transform:translateX(-100%)}
+.found{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.link{border:0;background:none;color:var(--accent);font-weight:600;cursor:pointer;padding:0 0 0 6px}
+.rgb-key{display:flex;gap:12px;font-size:12.5px;padding:7px 0}
+.rgb-key span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--c);margin-right:5px;vertical-align:-1px}
+.wiring .mono{font-family:var(--mono);font-size:11px}
+@media (max-width:1080px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.mini{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:minmax(0,1fr)}.span3,.span2{grid-column:auto}}
+@media (max-width:860px){
+  .cutaway{grid-template-columns:minmax(0,1fr)}
+  canvas.cooler.big{height:460px}
+  .plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;padding-left:0}
+  .brand{padding:12px max(16px,env(safe-area-inset-left,0px));border:0}
+  .nav{flex-direction:row;overflow-x:auto;padding:0 0 4px}
+  .nav a{grid-template-columns:18px auto;border-left:0;border-bottom:3px solid transparent;padding:8px 14px}
+  .nav a small{display:none}
+  .nav a svg{grid-row:auto}
+  .nav a.on{border-bottom-color:var(--accent)}
+  .side-foot{display:none}
+  .top{top:0}
+  .g2{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:520px){.g4,.stats{grid-template-columns:minmax(0,1fr)}.big{font-size:32px}.hello h1{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-snow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M4.9 6.5l14.2 11M19.1 6.5L4.9 17.5M9 4l3 2 3-2M9 20l3-2 3 2"/></symbol>
+  <symbol id="i-therm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 14.8V4a2 2 0 1 0-4 0v10.8a4 4 0 1 0 4 0z"/><path d="M12 9v7"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-gate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h7M14 12h7"/><path d="M10 12l4-5"/><circle cx="10" cy="12" r="1.3" fill="currentColor"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/></symbol>
+  <symbol id="i-fuel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="5" width="12" height="16" rx="2"/><path d="M9 2h6v3H9zM9 15h6M9 11h6"/></symbol>
+  <symbol id="i-pins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
+  <symbol id="i-wire" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20c4 0 4-8 8-8s4-8 8-8"/><circle cx="4" cy="20" r="1.5"/><circle cx="20" cy="4" r="1.5"/></symbol>
+  <symbol id="i-usb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v15M8 6l4-4 4 4M7 11v2l5 3M17 9v3l-5 3"/><circle cx="12" cy="19.5" r="2.5"/></symbol>
+  <symbol id="i-wifi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.5a15 15 0 0 1 20 0M5 12a10 10 0 0 1 14 0M8.5 15.5a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand"><svg><use href="#i-snow"/></svg>FROSTGATE</div>
+    <nav class="nav" id="nav">
+      <a href="#dash" data-view="dash"><svg><use href="#i-dash"/></svg><b>Dashboard</b><small>Temps, fuel, gate</small></a>
+      <a href="#sim" data-view="sim"><svg><use href="#i-play"/></svg><b>Simulation</b><small>Demo the cooler sped up</small></a>
+      <a href="#ai" data-view="ai"><svg><use href="#i-spark"/></svg><b>AI</b><small>Medicines, coolants, plan</small></a>
+      <a href="#fuel" data-view="fuel"><svg><use href="#i-fuel"/></svg><b>Fuel &amp; Ice</b><small>Joules and materials</small></a>
+      <a href="#pins" data-view="pins" hidden><svg><use href="#i-pins"/></svg><b>Setup</b><small>Thermostat, WiFi, model</small></a>
+      <a href="#wiring" data-view="wiring" hidden><svg><use href="#i-wire"/></svg><b>Wiring</b><small>GPIO map and diagram</small></a>
+    </nav>
+    <div class="side-foot">
+      <div class="row"><span><span class="dot" id="sideDot"></span><span id="sideConn">Not connected</span></span></div>
+      <div style="color:var(--side-dim);margin-top:4px" id="sideSub">ESP32-S3 · parts set on Wiring</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="seg" role="tablist" aria-label="Data source">
+        <button id="srcLive" class="on" type="button">Live ESP32</button>
+        <button id="srcSim" type="button">Simulation</button>
+      </div>
+      <span class="chip" id="connChip"><span class="dot"></span>Not connected</span>
+      <span class="chip cold" id="driveChip" hidden>Real gate follows the simulation</span>
+      <span class="spacer"></span>
+      <button class="btn" id="btnClaude" type="button"><svg><use href="#i-snow"/></svg>Claude app</button>
+      <button class="btn primary" id="btnUsb" type="button"><svg><use href="#i-usb"/></svg>Connect USB</button>
+      <button class="btn" id="btnWifi" type="button"><svg><use href="#i-wifi"/></svg>WiFi</button>
+    </header>
+
+    <!-- ================= DASHBOARD ================= -->
+    <section class="wrap view" id="view-dash">
+      <div class="hello">
+        <h1 id="helloTitle">Cooler status</h1>
+        <p id="helloSub">Watching your Yeti, ice bottle and room temperature.</p>
+      </div>
+
+      <div class="callout warn" id="liveHint" hidden></div>
+      <div class="callout bad" id="alarmBox" hidden></div>
+
+      <div class="card">
+        <div class="stats">
+          <div class="stat"><div class="ic warm" id="icYeti"><svg><use href="#i-therm"/></svg></div><div><div class="v" id="vYeti">–</div><div class="l">Yeti (cooled)</div></div></div>
+          <div class="stat"><div class="ic ice"><svg><use href="#i-snow"/></svg></div><div><div class="v" id="vIce">–</div><div class="l">Ice bottle</div></div></div>
+          <div class="stat"><div class="ic amb"><svg><use href="#i-sun"/></svg></div><div><div class="v" id="vAmb">–</div><div class="l">Ambient</div></div></div>
+          <div class="stat"><div class="ic blue" id="icGate"><svg><use href="#i-gate"/></svg></div><div><div class="v" id="vGate">–</div><div class="l" id="lGate">Gate</div></div></div>
+        </div>
+        <div class="divide"></div>
+        <div class="mini">
+          <div><span>Target band</span><b id="mBand">4.0 – 6.0 °C</b></div>
+          <div><span>Heat flowing into ice</span><b id="mFlow">–</b></div>
+          <div><span>Energy to pull Yeti to target</span><b id="mPull">–</b></div>
+          <div><span>Gate open time (session)</span><b id="mDuty">–</b></div>
+        </div>
+      </div>
+
+      <div class="grid g3">
+        <div class="card span2">
+          <div class="card-head">
+            <div><h2>Ice fuel remaining</h2><div class="sub" id="fuelSub">Water ice · 600 g</div></div>
+            <span class="chip cold" id="fuelChip">Full</span>
+          </div>
+          <div class="row" style="justify-content:space-between;align-items:flex-end;margin-bottom:14px">
+            <div><div class="big" id="fuelTime">–</div><div class="sub" style="margin-top:6px" id="fuelEta">until the ice can no longer cool the Yeti</div></div>
+            <div style="text-align:right"><div class="big" id="fuelPct" style="font-size:30px">–</div><div class="sub">of stored cold left</div></div>
+          </div>
+          <div class="bar" id="fuelBar"><i style="width:100%"></i></div>
+          <div class="bar-labels"><span id="fuelUsed">0 kJ used</span><span id="fuelTot">– kJ stored</span></div>
+          <div class="row" style="margin-top:14px">
+            <button class="btn small" id="btnLid" type="button">I just opened the Yeti</button>
+            <button class="btn small" id="btnRefuel" type="button">I refilled the ice</button>
+            <span class="note" id="fuelNote">The estimate updates as the Yeti warms and the gate pulls cold out of the ice.</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>Inside the cooler</h2><div class="sub">Ice left, cold air falling through the gate</div></div></div>
+          <canvas class="cooler" id="coolerDash" aria-label="Cutaway of the ice bottle, gate and Yeti"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><h2>Temperatures</h2><div class="chart-legend" style="margin-top:6px">
+            <span style="--c:var(--warm)">Yeti</span><span style="--c:var(--ice)">Ice bottle</span><span style="--c:var(--amb)">Ambient</span><span class="band">4–6 °C target</span><span class="gate">Gate open</span></div></div>
+          <div class="seg" id="winSeg">
+            <button type="button" data-w="600">10 min</button><button type="button" data-w="3600" class="on">1 h</button><button type="button" data-w="21600">6 h</button><button type="button" data-w="0">All</button>
+          </div>
+        </div>
+        <canvas class="chart" id="chartMain"></canvas>
+      </div>
+
+      <div class="grid g3">
+        <div class="card">
+          <div class="card-head"><div><h2>Gate</h2><div class="sub" id="gateRule">Opens above 6.0 °C, closes below 4.0 °C</div></div></div>
+          <div class="gate-vis">
+            <svg viewBox="0 0 84 84" aria-hidden="true">
+              <rect x="10" y="4" width="64" height="30" rx="5" fill="color-mix(in srgb,var(--ice) 16%,transparent)" stroke="var(--ice)" stroke-width="1.5"/>
+              <text x="42" y="23" text-anchor="middle" font-size="9" fill="var(--ice)">ICE</text>
+              <rect x="10" y="50" width="64" height="30" rx="5" fill="color-mix(in srgb,var(--warm) 12%,transparent)" stroke="var(--warm)" stroke-width="1.5"/>
+              <text x="42" y="69" text-anchor="middle" font-size="9" fill="var(--warm)">YETI</text>
+              <line x1="10" y1="42" x2="30" y2="42" stroke="var(--muted)" stroke-width="3"/>
+              <line x1="54" y1="42" x2="74" y2="42" stroke="var(--muted)" stroke-width="3"/>
+              <line id="gateFlap" x1="30" y1="42" x2="54" y2="42" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" style="transform-origin:30px 42px;transition:transform 1.5s linear"/>
+              <circle id="gateLed" cx="78" cy="42" r="4" fill="#e5484d"/>
+              <g id="gateFlow" opacity="0"><path d="M42 36v10M38 42l4 4 4-4" stroke="var(--ice)" stroke-width="1.6" fill="none"/></g>
+            </svg>
+            <div>
+              <div style="font-size:20px;font-weight:600" id="gateBig">Closed</div>
+              <div class="sub" id="gateWhy">Yeti is inside the target band</div>
+              <div class="sub" id="gateOuts" style="margin-top:4px"></div>
+            </div>
+          </div>
+          <div class="shaft" id="shaftBox">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="26" fill="var(--surface2)" stroke="var(--line)" stroke-width="2"/>
+              <path id="shaftArc" d="M32 9A23 23 0 0 0 9 32" fill="none" stroke="var(--ice)" stroke-width="2" stroke-dasharray="3 3"/>
+              <g id="shaftPtr" style="transform-origin:32px 32px;transition:transform 1.5s linear"><line x1="32" y1="32" x2="32" y2="10" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/></g>
+              <circle cx="32" cy="32" r="5" fill="var(--fg)"/>
+            </svg>
+            <div><div style="font-weight:500" id="shaftTxt">At 0° · closed</div><div class="sub" id="shaftSub">Opens by turning left 90°, closes by turning right 90°</div></div>
+          </div>
+          <div class="seg" id="gateSeg" style="margin-top:14px">
+            <button type="button" data-m="auto" class="on">Auto</button><button type="button" data-m="open">Force open</button><button type="button" data-m="closed">Force closed</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>Energy budget</h2><div class="sub">Live numbers behind the estimate</div></div></div>
+          <div class="kv">
+            <span>Cold stored at load</span><b id="kTot">–</b>
+            <span>Used so far</span><b id="kUsed">–</b>
+            <span>Leak into ice bottle</span><b id="kLeakS">–</b>
+            <span>Pulled from Yeti</span><b id="kPullY">–</b>
+            <span>Yeti heat capacity</span><b id="kCy">–</b>
+            <span>Steady load at this ambient</span><b id="kQss">–</b>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>Activity</h2><div class="sub">Gate moves, lid openings, refills</div></div></div>
+          <div class="log" id="log"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SIMULATION ================= -->
+    <section class="wrap view" id="view-sim" hidden>
+      <div class="hello">
+        <h1>Simulation</h1>
+        <p>A virtual Yeti, ice bottle and gate running the same physics and thermostat as the real cooler. Switch the data source to <b>Simulation</b> to see it on the dashboard.</p>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h2>Inside the cooler</h2><div class="sub">The Stanley hangs upside down over the gate. As the ice melts, meltwater collects at the neck and the ice above it shrinks.</div></div></div>
+        <div class="cutaway">
+          <canvas class="cooler big" id="coolerSim" aria-label="Animated cutaway of the simulated cooler"></canvas>
+          <div class="cut-side">
+            <div class="kv">
+              <span>Fuel left</span><b id="csFuel">–</b>
+              <span>Ice still frozen</span><b id="csSolid">–</b>
+              <span>Meltwater</span><b id="csMelt">–</b>
+              <span>Cold flowing in</span><b id="csFlow">–</b>
+              <span>Heat leaking in</span><b id="csLeak">–</b>
+              <span>Yeti lid</span><b id="csLid">–</b>
+            </div>
+            <div class="callout warn" style="margin-top:14px">Design note: meltwater pools right above the gate. In the real build, use sealed ice packs or a fine drip screen in the neck so water can't drip into the Yeti when the flap opens.</div>
+            <p class="note" style="margin-top:10px">Blue dots are cold air sinking through the gate. Orange dots are room heat getting in through the walls and lid.</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid g3">
+        <div class="card">
+          <div class="card-head"><div><h2>Controls</h2><div class="sub" id="simClock">Sim time 0:00</div></div><span class="chip" id="simState">Paused</span></div>
+          <div class="row" style="margin-bottom:14px">
+            <button class="btn primary" id="simRun" type="button">Start</button>
+            <button class="btn" id="simReset" type="button">Reset</button>
+          </div>
+          <div class="f" style="margin-bottom:12px">
+            <label for="simSpeed">Speed</label>
+            <select id="simSpeed"><option value="1">1× real time</option><option value="60">60× (1 min per second)</option><option value="600" selected>600× (10 min per second)</option><option value="3600">3600× (1 h per second)</option></select>
+          </div>
+          <div class="f" style="margin-bottom:12px">
+            <label for="simAmb">Ambient <span class="num" id="simAmbV">22.0 °C</span></label>
+            <input type="range" id="simAmb" min="5" max="40" step="0.5" value="22">
+          </div>
+          <div class="form" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+            <div class="f"><label for="simY0">Yeti start °C</label><input id="simY0" type="number" step="0.5" value="22"></div>
+            <div class="f"><label for="simNoise">Probe noise</label><select id="simNoise"><option value="1" selected>Realistic</option><option value="0">None</option></select></div>
+          </div>
+          <div class="divide"></div>
+          <div class="row">
+            <button class="btn small" id="simLid" type="button">Open lid for 20 s</button>
+            <button class="btn small" id="simItem" type="button">Add a 250 g drink at room temp</button>
+          </div>
+          <label class="check" style="margin-top:10px"><input type="checkbox" id="simLeak"> Leave the lid slightly open</label>
+          <label class="check" style="margin-top:6px"><input type="checkbox" id="simOpens"> Open the lid as often as the AI plan says</label>
+          <div class="divide"></div>
+          <div class="drive">
+            <label class="check"><input type="checkbox" id="simDrive"> <b>Move the real gate with the simulation</b></label>
+            <div class="kv" style="margin-top:8px">
+              <span>Virtual gate</span><b id="simGateV">–</b>
+              <span>Real gate (ESP32)</span><b id="simGateR">not connected</b>
+            </div>
+            <p class="note" id="simDriveNote" style="margin-top:8px">The stepper turns left 90° each time the virtual gate opens and right 90° when it closes, and the LED copies it. Works through the Claude app bridge or USB. If this page closes, the ESP32 goes back to its own thermostat within 30 s.</p>
+          </div>
+          <p class="note" style="margin-top:10px">Ice amount and material come from Fuel &amp; Ice. Insulation and gate strength come from Setup.</p>
+        </div>
+        <div class="card span2">
+          <div class="card-head"><div><h2>Estimator vs. truth</h2><div class="sub">The dashboard only sees the three probes, like the real thing. The simulator knows exactly how much ice is left.</div></div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th></th><th class="r">Estimator (probes only)</th><th class="r">Simulator truth</th></tr></thead>
+            <tbody>
+              <tr><td>Cold left</td><td class="r" id="cmpEst">–</td><td class="r" id="cmpTrue">–</td></tr>
+              <tr><td>Time left</td><td class="r" id="cmpEstT">–</td><td class="r" id="cmpTrueT">–</td></tr>
+              <tr><td>Yeti / ice / ambient</td><td class="r" id="cmpProbe">–</td><td class="r" id="cmpReal">–</td></tr>
+            </tbody>
+          </table></div>
+          <div class="divide"></div>
+          <div class="card-head" style="margin-bottom:6px"><div><h2>Forecast to empty</h2><div class="chart-legend" style="margin-top:6px"><span style="--c:var(--warm)">Yeti</span><span style="--c:var(--ice)">Ice bottle</span><span style="--c:var(--accent)">Fuel % (right axis)</span></div></div></div>
+          <canvas class="chart short" id="chartForecast"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= AI ================= -->
+    <section class="wrap view" id="view-ai" hidden>
+      <div class="hello">
+        <h1>AI</h1>
+        <p>Show Claude a medicine or a cold pack, set how long it has to last, and it works out the safest settings. Everything you save is stored on the ESP32, so it stays there when the board is unplugged.</p>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><div><h2>Medicine</h2><div class="sub">A photo of the box or label, or just the name</div></div></div>
+          <label class="drop" id="medDrop" for="medFile"><span>Tap to add a photo, or drop one here</span></label>
+          <input type="file" id="medFile" accept="image/*" hidden>
+          <div class="f" style="margin-top:12px"><label for="medDesc">Name or description</label><textarea id="medDesc" rows="2" placeholder="Humalog insulin pen, unopened"></textarea></div>
+          <div class="row" style="margin-top:12px"><button class="btn primary" id="medGo" type="button">Look up storage temperature</button><button class="btn" id="medStop" type="button" hidden>Stop</button></div>
+          <div class="ai-out" id="medOut" style="margin-top:14px"><p class="note">Claude answers from what it knows about the product's labeling. Always confirm with the package insert or a pharmacist.</p></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div><h2>Coolant or ice</h2><div class="sub">Ice cubes, a gel pack, frozen water bottle, anything frozen</div></div></div>
+          <label class="drop" id="aiDrop" for="aiFile"><span id="aiDropTxt">Tap to add a photo, or drop one here</span></label>
+          <input type="file" id="aiFile" accept="image/*" hidden>
+          <div class="f" style="margin-top:12px"><label for="aiDesc">Description</label><textarea id="aiDesc" rows="2" placeholder="Blue hard-shell reusable ice pack, about 450 g, says 'non-toxic gel'"></textarea></div>
+          <div class="f" style="margin-top:12px" id="aiKeyBox" hidden><label for="aiKey">Anthropic API key (only needed in the downloaded copy)</label><input id="aiKey" type="password" placeholder="sk-ant-…" autocomplete="off"><span class="hint">Stored only in this browser. Sent only to api.anthropic.com.</span></div>
+          <div class="row" style="margin-top:12px"><button class="btn primary" id="aiGo" type="button">Estimate properties</button><button class="btn" id="aiStop" type="button" hidden>Stop</button></div>
+          <div class="ai-out" id="aiOut" style="margin-top:14px"><p class="note">Claude estimates its melting point and how many joules of cold it holds per gram.</p></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div><h2>Plan</h2><div class="sub">Pick what you're protecting and how long it has to last. The physics model tests the settings; Claude explains the best way to do it.</div></div>
+          <span class="chip" id="planChip">No plan yet</span>
+        </div>
+        <div class="form">
+          <div class="f" style="grid-column:span 2"><label for="pMed">Protecting</label><select id="pMed"></select></div>
+          <div class="f"><label for="pDays">Must last (days)</label><input id="pDays" type="number" min="0.25" step="0.25"></div>
+          <div class="f"><label for="pOpens">Lid openings per day</label><input id="pOpens" type="number" min="0" step="1"><span class="hint" id="pOpensHint">Your guess; the lid watch learns the real number</span></div>
+          <div class="f"><label for="pOpenSec">Seconds per opening</label><input id="pOpenSec" type="number" min="1" step="1"></div>
+          <div class="f"><label for="pAmb">Room temperature °C</label><input id="pAmb" type="number" step="0.5"></div>
+          <div class="f"><label for="pForm">Ice you can use</label><select id="pForm"><option value="cubes">Ice cubes (≈600 g fit)</option><option value="crushed">Crushed ice (≈670 g fit)</option><option value="block">Water frozen in the bottle (≈1,060 g)</option></select></div>
+          <div class="f"><label for="pStart">Item starts</label><select id="pStart"><option value="cold">Already cold (from a fridge)</option><option value="room">At room temperature</option></select></div>
+        </div>
+        <label class="check" style="margin-top:12px"><input type="checkbox" id="pRefill" checked> I can refill the ice along the way</label>
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" id="planGo" type="button">Make a plan</button>
+          <button class="btn" id="planApply" type="button" disabled>Save settings to the ESP32</button>
+          <button class="btn" id="planAsk" type="button" disabled>Ask Claude for the best method</button>
+          <button class="btn" id="planStop" type="button" hidden>Stop</button>
+        </div>
+        <div id="planOut" style="margin-top:16px"></div>
+        <div class="ai-out advice" id="planAdvice" hidden></div>
+      </div>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head">
+            <div><h2>Library</h2><div class="sub">Saved medicines and coolants</div></div>
+            <span class="chip" id="libChip">Browser only</span>
+          </div>
+          <h3 class="lib-h">Medicines</h3>
+          <div class="lib" id="libMeds"></div>
+          <h3 class="lib-h">Coolants</h3>
+          <div class="lib" id="libPacks"></div>
+          <div class="row" style="margin-top:12px"><button class="btn small" id="libSync" type="button">Sync with the ESP32</button></div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <div><h2>Lid watch</h2><div class="sub">Watches how fast heat gets into the Yeti. A short jump is an opening; heat getting in steadily faster than normal means the lid isn't sealed.</div></div>
+            <span class="chip ok" id="lidChip">Sealed</span>
+          </div>
+          <div class="kv">
+            <span>Openings counted</span><b id="lidOpens">0</b>
+            <span>Openings per day (measured)</span><b id="lidRate">needs 2 h of data</b>
+            <span>Openings per day (plan)</span><b id="lidPlan">–</b>
+            <span>Heat leaking in vs normal</span><b id="lidRatio">–</b>
+          </div>
+          <div class="leakbar" aria-hidden="true"><i id="lidBar"></i><span style="left:45%">normal</span><span style="left:100%">2.2× = alert</span></div>
+          <p class="note" id="lidNote" style="margin-top:10px">Try it on the Simulation tab with "Leave the lid slightly open".</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FUEL ================= -->
+    <section class="wrap view" id="view-fuel" hidden>
+      <div class="hello">
+        <h1>Fuel &amp; Ice</h1>
+        <p>Tell the console what is in the Stanley. It works out the joules of cold stored, then tracks how fast they are spent.</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><div><h2>What's in the bottle</h2><div class="sub">Pick a material or enter its properties</div></div></div>
+          <div class="form">
+            <div class="f" style="grid-column:1/-1"><label for="fMat">Material</label><select id="fMat"></select></div>
+            <div class="f"><label for="fMass">Mass</label><input id="fMass" type="number" min="1" step="1"></div>
+            <div class="f"><label for="fUnit">Unit</label><select id="fUnit"><option value="g">grams</option><option value="oz">ounces</option><option value="lb">pounds</option></select></div>
+            <div class="f"><label for="fT0">Starting temp °C</label><input id="fT0" type="number" step="0.5"><span class="hint">Home freezer ≈ −18 °C</span></div>
+            <div class="f"><label for="fTm">Melting point °C</label><input id="fTm" type="number" step="0.5"></div>
+            <div class="f"><label for="fL">Latent heat J/g</label><input id="fL" type="number" step="1"></div>
+            <div class="f"><label for="fCs">Solid c J/g·K</label><input id="fCs" type="number" step="0.01"></div>
+            <div class="f"><label for="fCl">Liquid c J/g·K</label><input id="fCl" type="number" step="0.01"></div>
+            <div class="f"><label for="fSteel">Stanley inner steel g</label><input id="fSteel" type="number" step="10"></div>
+          </div>
+          <label class="check" style="margin-top:12px"><input type="checkbox" id="fPre"> Stanley was pre-chilled (no extra cost to cool its steel)</label>
+          <div class="callout warn" id="fWarn" style="margin-top:12px" hidden></div>
+          <div class="row" style="margin-top:14px"><button class="btn primary" id="fLoad" type="button">Load this fuel and reset the meter</button></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>Stored cold</h2><div class="sub">Usable energy until the bottle is too warm to pull the Yeti below <span id="fTendLbl">4 °C</span></div></div></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Stage</th><th>How</th><th class="r">Energy</th></tr></thead>
+            <tbody id="fTable"></tbody>
+          </table></div>
+          <div class="divide"></div>
+          <div class="kv">
+            <span>Yeti steel (inner wall)</span><b id="cySteel">–</b>
+            <span>Air inside Yeti</span><b id="cyAir">–</b>
+            <span>Contents</span><b id="cyCont">–</b>
+            <span>Yeti total heat capacity</span><b id="cyTot">–</b>
+            <span>First pull-down from room temp</span><b id="cyPull">–</b>
+            <span>Rough life at 22 °C ambient</span><b id="fLife">–</b>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SETUP ================= -->
+    <section class="wrap view" id="view-pins" hidden>
+      <div class="hello">
+        <h1>Setup</h1>
+        <p>Thermostat, WiFi and the thermal model. Pins and parts live on the <b>Wiring</b> tab.</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <div class="card-head"><div><h2>Gate thermostat</h2><div class="sub">The ESP32 runs this itself, even with the browser closed</div></div></div>
+          <div class="form">
+            <div class="f"><label for="cHi">Open gate above °C</label><input id="cHi" type="number" step="0.1"></div>
+            <div class="f"><label for="cLo">Close gate below °C</label><input id="cLo" type="number" step="0.1"></div>
+            <div class="f"><label for="cPeriod">Read probes every (ms)</label><input id="cPeriod" type="number" min="800" step="100"></div>
+            <div class="f"><label for="cUsb">USB port on the board</label><select id="cUsb"><option value="native">Native USB (CDC on boot)</option><option value="uart">UART / COM port</option></select></div>
+          </div>
+          <div class="row" style="margin-top:12px"><button class="btn primary" id="sendCfg2" type="button">Send to ESP32</button></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div><h2>WiFi (optional)</h2><div class="sub">Lets the console reach the ESP32 without a cable</div></div></div>
+          <div class="form">
+            <div class="f"><label for="wSsid">Network name</label><input id="wSsid" autocomplete="off"></div>
+            <div class="f"><label for="wPass">Password</label><input id="wPass" type="password" autocomplete="off"></div>
+            <div class="f"><label for="wIp">ESP32 IP address</label><input id="wIp" placeholder="192.168.1.50"></div>
+          </div>
+          <div class="row" style="margin-top:12px"><button class="btn" id="wSend" type="button">Send WiFi to ESP32 (over USB)</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><h2>Thermal model</h2><div class="sub">These drive the fuel estimate and the simulator. UA is heat leak in watts per degree of difference.</div></div></div>
+        <div class="form">
+          <div class="f"><label for="tUaY">Yeti wall + lid UA (W/K)</label><input id="tUaY" type="number" step="0.005"><span class="hint">Vacuum food jar ≈ 0.03–0.06</span></div>
+          <div class="f"><label for="tUaS">Stanley wall + lid UA (W/K)</label><input id="tUaS" type="number" step="0.005"></div>
+          <div class="f"><label for="tUaGo">Gate open coupling (W/K)</label><input id="tUaGo" type="number" step="0.01"><span class="hint">Grows with the gate opening size</span></div>
+          <div class="f"><label for="tUaGc">Gate closed leak (W/K)</label><input id="tUaGc" type="number" step="0.001"></div>
+          <div class="f"><label for="tSteel">Yeti inner steel (g)</label><input id="tSteel" type="number" step="10"></div>
+          <div class="f"><label for="tAir">Yeti air volume (L)</label><input id="tAir" type="number" step="0.01"><span class="hint">24 oz = 0.71 L</span></div>
+          <div class="f"><label for="tCm">Contents mass (g)</label><input id="tCm" type="number" step="10"></div>
+          <div class="f"><label for="tCc">Contents c (J/g·K)</label><input id="tCc" type="number" step="0.1"><span class="hint">Water 4.2 · food ≈ 3.5</span></div>
+        </div>
+        <label class="check" style="margin-top:12px"><input type="checkbox" id="tLearn"> Learn the Yeti's real leak rate from live data while the gate is closed</label>
+        <div class="row" style="margin-top:12px"><button class="btn" id="tReset" type="button">Restore default model</button></div>
+      </div>
+    </section>
+
+    <!-- ================= WIRING ================= -->
+    <section class="wrap view" id="view-wiring" hidden>
+      <div class="hello"><h1>Wiring</h1><p>Give each GPIO a job from the dropdowns. The diagram redraws as you go. Press <b>Send to ESP32</b> to apply it, no reflashing needed.</p></div>
+      <div class="card">
+        <div class="card-head">
+          <div><h2>GPIO map</h2><div class="sub">One row per pin. A 1-Wire pin can carry any number of probes.</div></div>
+          <div class="row">
+            <span class="chip" id="wireState">Matches ESP32</span>
+            <button class="btn" id="readCfg" type="button">Read from ESP32</button>
+            <button class="btn primary" id="sendCfg" type="button">Send to ESP32</button>
+          </div>
+        </div>
+        <div id="devList" class="devs"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn" id="addDev" type="button">+ Add a GPIO</button>
+          <button class="btn" id="resetWiring" type="button">Back to my default wiring</button>
+        </div>
+        <div id="wireMsgs" style="display:flex;flex-direction:column;gap:6px;margin-top:14px"></div>
+      </div>
+      <div class="card wiring">
+        <div class="card-head"><div><h2>Diagram</h2><div class="sub">Drawn from the GPIO map above</div></div></div>
+        <div id="diagram"></div>
+      </div>
+      <div class="card" id="bridgeCard">
+        <div class="card-head">
+          <div><h2>Control the ESP32 from inside Claude</h2><div class="sub">Claude's viewer can't open USB ports. A small helper on your computer holds the port, and this page talks to it through the Claude desktop app.</div></div>
+          <span class="chip" id="bridgeChip">Not connected</span>
+        </div>
+        <ol class="steps">
+          <li>Install Python 3.10 or newer from python.org (tick <b>Add python.exe to PATH</b>). Then in a terminal run <code>py -m pip install mcp pyserial</code></li>
+          <li>Save <code>frostgate_bridge.py</code> in your FrostGate folder.</li>
+          <li>In the Claude desktop app open <b>Settings → Developer → Edit Config</b>, paste the config below and save. If the file already has an <code>mcpServers</code> section, add only the <code>"frostgate"</code> entry inside it.</li>
+        </ol>
+        <div class="form" style="margin:12px 0">
+          <div class="f" style="grid-column:1/-1"><label for="bridgePath">Where you saved frostgate_bridge.py</label><input id="bridgePath" spellcheck="false"></div>
+        </div>
+        <pre class="snippet" id="bridgeSnippet"></pre>
+        <div class="row" style="margin-top:8px"><button class="btn small" id="copySnippet" type="button">Copy config</button></div>
+        <ol class="steps" start="4" style="margin-top:12px">
+          <li>Fully quit Claude (tray icon → Quit) and reopen it.</li>
+          <li>Open this artifact in the desktop app and press <b>Claude app</b> at the top. Allow access when Claude asks.</li>
+        </ol>
+        <div class="divide"></div>
+        <div class="row">
+          <div class="f" style="width:170px"><label for="bridgePort">COM port (optional)</label><input id="bridgePort" placeholder="auto, e.g. COM5" spellcheck="false"></div>
+          <button class="btn" id="bridgeReconnect" type="button" style="align-self:flex-end">Reconnect bridge to ESP32</button>
+        </div>
+        <p class="note" id="bridgePorts" style="margin-top:8px"></p>
+        <p class="note" style="margin-top:8px">While the bridge runs it holds the COM port. Quit the Claude app before uploading firmware from Arduino IDE.</p>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h2 style="margin-bottom:10px">Flash the firmware (once)</h2>
+          <ol class="steps">
+            <li>In Arduino IDE, install the <b>esp32</b> board package (Espressif).</li>
+            <li>Library Manager: install <code>OneWire</code>, <code>DallasTemperature</code>, <code>ESP32Servo</code>, <code>ArduinoJson</code> (v7).</li>
+            <li>Board: <b>ESP32S3 Dev Module</b>. Plugged into the port marked USB? Set <b>USB CDC On Boot: Enabled</b>.</li>
+            <li>Open <code>FrostGate.ino</code>, upload, then close the Serial Monitor (only one app can hold the port).</li>
+            <li>Open this console in Chrome or Edge, press <b>Connect USB</b>. After that, all pin changes happen here.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2 style="margin-bottom:10px">Good to know</h2>
+          <ol class="steps" style="list-style:disc">
+            <li>One 4.7 kΩ pull-up from the 1-Wire data line to 3.3 V covers every probe on that pin.</li>
+            <li>The onboard RGB LED is GPIO 48 on most S3 DevKitC-1 boards and GPIO 38 on v1.1 boards. If it stays dark, try the other.</li>
+            <li>Plain LEDs need a 220–330 Ω resistor. A fan needs a logic-level MOSFET and a flyback diode; the GPIO can't power it directly.</li>
+            <li>Power a servo from 5 V, not the 3.3 V pin, and join its ground to the ESP32's ground.</li>
+            <li>Two ways to connect: <b>Claude app</b> (this page inside the Claude desktop app, through the bridge above) or <b>Connect USB</b> (the downloaded file in Chrome or Edge).</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+// ======================================================================
+// Storage helpers
+// ======================================================================
+const store={get(k,d){try{const v=localStorage.getItem("fg."+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("fg."+k,JSON.stringify(v))}catch(e){}}};
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+// ======================================================================
+// Config
+// ======================================================================
+const DEFAULT_MODEL={uaY:0.040,uaS:0.045,uaGo:0.25,uaGc:0.008,ySteel:220,yAir:0.71,cMass:300,cC:3.6};
+const DEFAULT_DEVICES=[
+  {pin:4,type:"temp",sensors:[{addr:"282846D600000074",role:"amb"},{addr:"28C937D500000042",role:"yeti"},{addr:"28D51BD20000003B",role:"ice"}]},
+  {pin:48,type:"rgb",bright:40},
+  {pin:15,type:"stepper",pins:[15,16,17,18],deg:90,rpm:10,spr:4096,rev:false,release:true}];
+const DEFAULT_CFG=Object.assign({devices:DEFAULT_DEVICES,hi:6,lo:4,safeLo:-100,safeHi:100,profile:"",period:1000,usb:"native",ssid:"",ip:"",learn:false},DEFAULT_MODEL);
+let CFG=Object.assign({},DEFAULT_CFG,store.get("cfg",{}));
+if(!Array.isArray(CFG.devices)||CFG.pins){CFG.devices=JSON.parse(JSON.stringify(DEFAULT_DEVICES));delete CFG.pins;delete CFG.idx;delete CFG.open;delete CFG.closed}
+CFG.devices=JSON.parse(JSON.stringify(CFG.devices));
+// one-time: add the stepper on GPIO 15-18 to wiring saved before it existed
+if(!store.get("mig3",false)){
+  const taken=new Set(CFG.devices.flatMap(d=>d.type==="stepper"?(d.pins||[d.pin]):[d.pin]));
+  if(!CFG.devices.some(d=>d.type==="stepper")&&![15,16,17,18].some(p=>taken.has(p))){CFG.devices.push({pin:15,type:"stepper",pins:[15,16,17,18],deg:90,rpm:10,spr:4096,rev:false,release:true});store.set("dirty",true)}
+  store.set("mig3",true);store.set("cfg",CFG);
+}
+const saveCfg=()=>store.set("cfg",CFG);
+
+const MATERIALS={
+  water:{name:"Water ice (cubes or block)",Tm:0,L:334,cs:2.09,cl:4.19},
+  gel:{name:"Gel ice pack (water based)",Tm:-1,L:300,cs:2.0,cl:3.8},
+  brine:{name:"Salt-water ice (≈10% salt)",Tm:-6,L:285,cs:2.0,cl:3.7},
+  pcm21:{name:"Eutectic pack −21 °C",Tm:-21,L:230,cs:1.9,cl:3.4},
+  pcm5:{name:"Phase-change pack +5 °C",Tm:5,L:190,cs:1.8,cl:2.2},
+  custom:{name:"Custom / from AI",Tm:0,L:334,cs:2.09,cl:4.19}
+};
+const DEFAULT_FUEL={mat:"water",mass:600,unit:"g",T0:-18,Tm:0,L:334,cs:2.09,cl:4.19,steel:320,pre:false,label:"Water ice (cubes or block)"};
+let FUEL=Object.assign({},DEFAULT_FUEL,store.get("fuel",{}));
+
+function yetiC(){
+  const steel=CFG.ySteel*0.50, air=CFG.yAir*1.2*1.005, cont=CFG.cMass*CFG.cC;
+  return {steel,air,cont,total:steel+air+cont};
+}
+// Usable cold in the fuel, in joules
+function fuelEnergy(f=FUEL,amb=22){
+  const m=f.mass;
+  const Tend=Math.max(f.Tm,CFG.lo-1);                 // fuel must stay colder than this to pull Yeti below "close" temp
+  const sens=f.T0<f.Tm? m*f.cs*(f.Tm-f.T0):0;
+  const lat=f.T0<=f.Tm? m*f.L:0;
+  const liq=m*f.cl*(Tend-f.Tm);
+  const chill=f.pre?0:f.steel*0.50*Math.max(0,amb-f.Tm);
+  return {sens,lat,liq,chill,Tend,total:Math.max(1,sens+lat+liq-chill)};
+}
+
+// ======================================================================
+// Formatting
+// ======================================================================
+const fT=v=>v==null||isNaN(v)?"–":v.toFixed(1);
+const fkJ=j=>(j/1000).toLocaleString(undefined,{maximumFractionDigits:j<10000?2:1})+" kJ";
+const fW=w=>(w==null||isNaN(w))?"–":w.toFixed(2)+" W";
+function fDur(s){
+  if(s==null||!isFinite(s))return "–";
+  s=Math.max(0,s);
+  if(s<90)return Math.round(s)+" s";
+  const h=Math.floor(s/3600),m=Math.round((s%3600)/60);
+  if(h>=48)return (s/86400).toFixed(1)+" days";
+  return h?`${h} h ${String(m).padStart(2,"0")} m`:`${m} min`;
+}
+function fClock(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return `${h}:${String(m).padStart(2,"0")}`}
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),3800)}
+
+// ======================================================================
+// Estimator: tracks spent cold using only the three probes + gate state
+// ======================================================================
+class Estimator{
+  constructor(src){this.src=src;this.reset(fuelEnergy().total)}
+  reset(total){
+    this.Etot=total;this.Eused=0;this.buf=[];this.qS=0;this.qY=0;this.qSS=1;this.pull=0;
+    this.ambS=null;this.depleted=false;this.depT=0;this.gateAt=-1e9;this.lastGate=null;this.lidAt=-1e9;this.secLeft=null;
+    this.short=[];this.opens=[];this.lastOpenAt=-1e9;this.leak=false;this.leakT=0;this.leakRatio=null;this.firstT=null;this.lastT=0;
+  }
+  slope(){
+    const b=this.buf;if(b.length<5)return 0;
+    const t0=b[0][0];let n=b.length,sx=0,sy=0,sxx=0,sxy=0;
+    for(const [t,y] of b){const x=t-t0;sx+=x;sy+=y;sxx+=x*x;sxy+=x*y}
+    const d=n*sxx-sx*sx;return d>0?(n*sxy-sx*sy)/d:0;
+  }
+  step(dt,s,t){
+    const F=FUEL,Cy=yetiC().total;
+    const amb=s.amb??this.ambS??22;
+    this.ambS=this.ambS==null?amb:this.ambS+(amb-this.ambS)*Math.min(1,dt/300);
+    const ice=s.ice??F.Tm,ty=s.yeti;
+    if(s.gate!==this.lastGate){this.gateAt=t;this.lastGate=s.gate;this.buf=[]}
+    if(ty!=null){this.buf.push([t,ty]);while(this.buf.length&&t-this.buf[0][0]>120)this.buf.shift()}
+    const dTdt=this.slope();
+    if(this.firstT==null)this.firstT=t;this.lastT=t;
+    // lid watch: a quick jump while the gate is closed is an opening; heat getting in steadily faster than normal is a leak
+    if(ty!=null){this.short.push([t,ty]);while(this.short.length&&t-this.short[0][0]>30)this.short.shift()}
+    if(ty!=null&&this.short.length>3){
+      let mn=Infinity;for(const p of this.short)mn=Math.min(mn,p[1]);
+      if(ty-mn>0.25&&t-this.lastOpenAt>120){this.lastOpenAt=t;this.lidAt=t;this.opens.push(t);if(this.opens.length>500)this.opens.shift();logEvt(`Lid opening detected (Yeti jumped ${(ty-mn).toFixed(1)} °C)`,this.src)}
+    }
+    if(ty!=null&&t-this.gateAt>180&&t-this.lastOpenAt>180&&amb-ty>3&&this.buf.length>20){
+      // heat getting into the Yeti = what warms it + what the gate is pulling out (works with the gate open or closed)
+      const qIn=Cy*dTdt+(s.gate?CFG.uaGo:CFG.uaGc)*Math.max(0,ty-ice),ratio=qIn/(CFG.uaY*(amb-ty));
+      this.leakRatio=this.leakRatio==null?ratio:this.leakRatio+(ratio-this.leakRatio)*Math.min(1,dt/120);
+      if(this.leakRatio>2.2){this.leakT+=dt;if(this.leakT>300&&!this.leak){this.leak=true;logEvt(`Yeti lid may not be closed all the way: heat is getting in ${this.leakRatio.toFixed(1)}× faster than normal`,this.src)}}
+      else if(this.leakRatio<1.5){this.leakT=0;if(this.leak){this.leak=false;logEvt("Lid looks sealed again",this.src)}}
+    }
+    this.qS=CFG.uaS*Math.max(0,amb-ice);
+    this.qY=0;
+    if(ty!=null){
+      if(s.gate)this.qY=Math.max(0,CFG.uaY*(amb-ty)-Cy*dTdt);
+      else this.qY=CFG.uaGc*Math.max(0,ty-ice);
+    }
+    if(!this.depleted)this.Eused=Math.min(this.Etot,this.Eused+(this.qS+this.qY)*dt);
+    // optional learning of the Yeti leak while the gate is closed
+    if(CFG.learn&&!s.gate&&ty!=null&&t-this.gateAt>180&&t-this.lidAt>900&&amb-ty>5&&this.buf.length>20){
+      const ua=(Cy*dTdt+CFG.uaGc*(ty-ice))/(amb-ty);
+      if(ua>0.005&&ua<0.5){CFG.uaY+=(ua-CFG.uaY)*Math.min(1,dt/7200);}
+    }
+    // depletion: ice bottle well above the useful limit for 5 minutes
+    const Tend=fuelEnergy().Tend;
+    if(s.ice!=null&&s.ice>Tend+1.5&&this.Eused/this.Etot>0.3){this.depT+=dt;if(this.depT>300&&!this.depleted){this.depleted=true;this.Eused=this.Etot;logEvt("Ice bottle is too warm: fuel used up",this.src)}}
+    else this.depT=0;
+    const mid=(CFG.hi+CFG.lo)/2;
+    this.qSS=Math.max(0.02,CFG.uaS*Math.max(0,this.ambS-F.Tm)+CFG.uaY*Math.max(0,this.ambS-mid));
+    this.pull=ty!=null?Cy*Math.max(0,ty-mid):0;
+  }
+  get rem(){return Math.max(0,this.Etot-this.Eused)}
+  get frac(){return this.rem/this.Etot}
+  get quickLeft(){return this.depleted?0:Math.max(0,this.rem-this.pull)/this.qSS}
+}
+
+// ======================================================================
+// Physical world for the simulator and forecasts
+// ======================================================================
+class World{
+  constructor(o={}){
+    this.t=0;this.amb=o.amb??22;this.Ty=o.Ty??22;this.extraC=o.extraC||0;
+    const E=fuelEnergy(FUEL,this.amb);
+    this.chill=E.chill;this.Etot=E.total;this.Tend=E.Tend;
+    this.used=o.used??0;                 // joules of usable cold spent
+    this.gate=o.gate??false;this.mode=o.mode||"auto";this.lid=0;this.noise=o.noise??1;
+  }
+  absorbed(){return this.used+this.chill}
+  iceT(){
+    const f=FUEL,m=f.mass,a=this.absorbed();
+    const S=f.T0<f.Tm?m*f.cs*(f.Tm-f.T0):0, L=f.T0<=f.Tm?m*f.L:0;
+    if(a<S)return f.T0+a/(m*f.cs);
+    if(a<S+L)return f.Tm;
+    return f.Tm+(a-S-L)/(m*f.cl);
+  }
+  probe(v){if(!this.noise)return v;return Math.round((v+(Math.random()-.5)*0.06)/0.0625)*0.0625}
+  read(){return {yeti:this.probe(this.Ty),ice:this.probe(this.iceT()),amb:this.probe(this.amb),gate:this.gate?1:0,mode:this.mode}}
+  step(dt){
+    const Ti=this.iceT(),Cy=yetiC().total+this.extraC;
+    const uaY=(this.lid>0?1.8:CFG.uaY*(this.leak?3:1))+(this.extraUA||0); if(this.lid>0)this.lid-=dt;
+    const hi=this.hi??CFG.hi,lo=this.lo??CFG.lo;
+    const uaG=this.gate?CFG.uaGo:CFG.uaGc;
+    const qLeak=uaY*(this.amb-this.Ty), qGate=uaG*(this.Ty-Ti);
+    this.Ty+=(qLeak-qGate)/Cy*dt;
+    this.used+=(CFG.uaS*(this.amb-Ti)+qGate)*dt;
+    if(this.mode==="open")this.gate=true;
+    else if(this.mode==="closed")this.gate=false;
+    else{ if(!this.gate&&this.Ty>hi)this.gate=true; else if(this.gate&&this.Ty<lo)this.gate=false; }
+    this.t+=dt;
+  }
+  empty(){return this.iceT()>this.Tend+0.05}
+  clone(){const w=Object.create(World.prototype);Object.assign(w,this);w.noise=0;w.lid=0;return w}
+}
+// Run a world forward until the fuel can no longer hold the Yeti in band
+function forecast(w0,maxDays=14){
+  const w=w0.clone(),dt=10,pts=[];let k=0;
+  if(w.extraUA==null)w.extraUA=typeof opensUA==="function"?opensUA():0;   // planned lid openings, averaged
+  w.mode=w0.mode==="closed"?"closed":"auto";
+  const maxT=maxDays*86400;
+  while(w.t-w0.t<maxT){
+    if(k%30===0)pts.push([w.t-w0.t,w.Ty,w.iceT(),clamp(1-w.used/w.Etot,0,1)]);
+    if(w.empty())break;
+    w.step(dt);k++;
+  }
+  pts.push([w.t-w0.t,w.Ty,w.iceT(),clamp(1-w.used/w.Etot,0,1)]);
+  return {seconds:w.t-w0.t,pts,capped:w.t-w0.t>=maxT};
+}
+
+// ======================================================================
+// App state
+// ======================================================================
+const S={
+  source:"live", hist:{live:[],sim:[]}, latest:{live:null,sim:null},
+  est:{live:new Estimator("live"),sim:new Estimator("sim")},
+  gateOpenSec:{live:0,sim:0}, sessSec:{live:0,sim:0},
+  conn:{type:null,port:null,reader:null,writer:null,poll:null,info:null,lastMsg:0},
+  win:3600, simRun:false, simSpeed:600, sim:null, logs:[], lastFc:0, fcLive:null, fcSim:null, fcTrue:null
+};
+function hist(){return S.hist[S.source]}
+
+function logEvt(msg,src=S.source){
+  const t=src==="sim"&&S.sim?fClock(S.sim.t):new Date().toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
+  S.logs.unshift({t,msg,src});S.logs=S.logs.slice(0,80);renderLog();
+}
+function renderLog(){
+  const el=$("log");el.textContent="";
+  const rows=S.logs.filter(l=>l.src===S.source);
+  if(!rows.length){const d=document.createElement("div");d.innerHTML="<time></time><span style='color:var(--muted)'>Nothing yet</span>";el.append(d);return}
+  for(const l of rows.slice(0,40)){const d=document.createElement("div");const ti=document.createElement("time");ti.textContent=l.t;const sp=document.createElement("span");sp.textContent=l.msg;d.append(ti,sp);el.append(d)}
+}
+
+// ingest a reading (live or sim). t = seconds on that source's clock
+function ingest(src,r,t,dt){
+  const prev=S.latest[src];
+  S.latest[src]=Object.assign({t},r);
+  if(prev&&prev.gate!==r.gate)logEvt(r.gate?`Gate opened (Yeti ${fT(r.yeti)} °C)`:`Gate closed (Yeti ${fT(r.yeti)} °C)`,src);
+  if(dt>0&&dt<120){S.est[src].step(dt,r,t);S.sessSec[src]+=dt;if(r.gate)S.gateOpenSec[src]+=dt}
+  const h=S.hist[src];
+  const last=h[h.length-1];
+  const every=src==="sim"?Math.max(1,S.simSpeed/20):1;
+  if(!last||t-last[0]>=every){h.push([t,r.yeti,r.ice,r.amb,r.gate?1:0]);if(h.length>20000)h.splice(0,h.length-20000)}
+}
+
+// ======================================================================
+// Live connection: Web Serial (USB) and WiFi polling
+// ======================================================================
+async function usbConnect(){
+  if(mcpApi){return bridgeConnect(false)}   // inside the Claude app: USB goes through the bridge
+  if(S.conn.type==="usb"){await disconnect();return}
+  if(!("serial" in navigator)){showLiveHint("This browser has no USB serial support. Open the downloaded frostgate.html in Chrome or Edge on a computer.");return}
+  try{
+    const port=await navigator.serial.requestPort();
+    await port.open({baudRate:115200,bufferSize:4096});
+    if(CFG.usb==="uart"){await port.setSignals({dataTerminalReady:false,requestToSend:false}).catch(()=>{})}
+    else{await port.setSignals({dataTerminalReady:true,requestToSend:false}).catch(()=>{})}
+    S.conn.type="usb";S.conn.port=port;
+    const dec=new TextDecoderStream();S.conn.pipe=port.readable.pipeTo(dec.writable).catch(()=>{});
+    S.conn.reader=dec.readable.getReader();S.conn.writer=port.writable.getWriter();
+    setSource("live");setConn();logEvt("Connected over USB","live");
+    readLoop();
+    setTimeout(()=>send({cmd:"hello"}),400);
+  }catch(e){
+    if(e&&e.name==="NotFoundError")return; // user closed the picker
+    if(e&&(e.name==="SecurityError"||/permission|policy|disallowed/i.test(e.message||"")))showLiveHint("USB access is blocked inside the Claude viewer. Open the downloaded frostgate.html in Chrome or Edge to talk to the ESP32. Simulation, fuel and setup all work here.");
+    else toast("Couldn't open the port: "+(e.message||e)+". Close Arduino's Serial Monitor and try again.");
+  }
+}
+async function readLoop(){
+  let buf="";
+  try{
+    while(S.conn.reader){
+      const {value,done}=await S.conn.reader.read();
+      if(done)break;
+      buf+=value;let i;
+      while((i=buf.indexOf("\n"))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+1);if(line)onLine(line)}
+      if(buf.length>8000)buf="";
+    }
+  }catch(e){}
+  if(S.conn.type==="usb"){await disconnect();toast("ESP32 disconnected")}
+}
+async function disconnect(){
+  const c=S.conn;
+  try{if(c.reader){await c.reader.cancel().catch(()=>{});c.reader.releaseLock()}}catch(e){}
+  try{if(c.writer){c.writer.releaseLock()}}catch(e){}
+  try{await c.pipe}catch(e){}
+  try{if(c.port)await c.port.close()}catch(e){}
+  if(c.poll)clearInterval(c.poll);
+  c.bridge=null;c.kvLoaded=false;
+  const was=c.type;
+  Object.assign(c,{type:null,port:null,reader:null,writer:null,poll:null,pipe:null});
+  setConn();if(was)logEvt("Disconnected","live");
+}
+async function send(obj){
+  const c=S.conn;
+  if(c.type==="usb"&&c.writer){await c.writer.write(new TextEncoder().encode(JSON.stringify(obj)+"\n"));return true}
+  if(c.type==="claude"){
+    try{
+      const r=await mcpApi.callTool(BRIDGE,"esp32_command",{command:obj},{cache:false});
+      const p=r.payload||{};
+      if(p.reply)onLine(JSON.stringify(p.reply));
+      else if(obj.cmd!=="remote")toast("The ESP32 didn't answer. Check the cable and that the board is running.");
+      return true;
+    }catch(e){toast(bridgeErr(e));return false}
+  }
+  if(c.type==="wifi"){
+    try{const r=await fetch(`http://${CFG.ip}/cmd`,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(obj)});onLine(await r.text());return true}
+    catch(e){toast("ESP32 didn't answer over WiFi");return false}
+  }
+  toast("Connect to the ESP32 first (USB or WiFi)");return false;
+}
+function onLine(line){
+  let m;try{m=JSON.parse(line)}catch(e){return}
+  S.conn.lastMsg=Date.now();
+  if(m.t==="state"){
+    const now=Date.now()/1000;
+    if(!S.liveT0)S.liveT0=now;
+    const t=now-S.liveT0;
+    const prev=S.latest.live;
+    const dt=prev?t-prev.t:0;
+    ingest("live",{yeti:m.yeti,ice:m.ice,amb:m.amb,gate:m.gate,mode:m.mode,flap:m.flap,moving:m.moving},t,dt);
+    if(m.ip&&m.ip!==CFG.ip){CFG.ip=m.ip;saveCfg();$("wIp").value=m.ip;toast("ESP32 is on WiFi at "+m.ip)}
+    updateReadings(m.sensors);persistLive();
+  }else if(m.t==="cfg"){
+    S.conn.info=m;adoptDeviceCfg(m.cfg,m.saved);setConn();
+    if(!S.conn.kvLoaded&&typeof loadKv==="function"){S.conn.kvLoaded=true;loadKv()}
+    if(m.saved)toast("Saved on the ESP32");
+  }else if(m.t==="scan"){
+    for(const b of m.buses||[])scanFound[b.pin]=(b.found||[]).map(f=>({addr:addrNorm(f.addr),c:f.c}));
+    renderWiring();const n=(m.buses||[]).reduce((a,b)=>a+(b.found||[]).length,0);toast(`Scan found ${n} probe${n===1?"":"s"}`);
+  }else if(m.t==="kv"){handleKv(m)}
+  else if(m.t==="error"){toast(m.msg)}
+  else if(m.t==="ok"){toast(m.msg)}
+}
+function wifiConnect(){
+  if(S.conn.type==="wifi"){disconnect();return}
+  const ip=(CFG.ip||"").trim();
+  if(!ip){setView("pins");toast("Enter the ESP32's IP address under WiFi first");$("wIp").focus();return}
+  if(location.protocol==="https:"){showLiveHint("Browsers block plain-HTTP requests from a secure page, so WiFi mode only works from the downloaded frostgate.html. USB is the most reliable option.");return}
+  S.conn.type="wifi";setSource("live");setConn();logEvt("Polling "+ip+" over WiFi","live");
+  const tick=async()=>{try{const r=await fetch(`http://${ip}/state`,{cache:"no-store"});onLine(await r.text())}catch(e){}};
+  tick();S.conn.poll=setInterval(tick,Math.max(1000,CFG.period));
+  send({cmd:"hello"});
+}
+function showLiveHint(msg){const h=$("liveHint");h.textContent=msg;h.hidden=false;setView("dash")}
+
+// keep the live fuel meter across page reloads
+function persistLive(){
+  const now=Date.now();if(now-(persistLive.last||0)<10000)return;persistLive.last=now;
+  const e=S.est.live;store.set("live",{Eused:e.Eused,Etot:e.Etot,qSS:e.qSS,at:now,depleted:e.depleted});
+}
+function restoreLive(){
+  const p=store.get("live",null);if(!p)return;
+  const e=S.est.live;e.Etot=p.Etot;e.Eused=p.Eused;e.depleted=!!p.depleted;
+  const gap=(Date.now()-p.at)/1000;
+  if(gap>60&&!e.depleted){
+    const add=Math.min(e.rem,(p.qSS||0)*gap);e.Eused+=add;
+    logEvt(`Console was closed for ${fDur(gap)}. Assumed ${fkJ(add)} of cold was spent meanwhile.`,"live");
+  }
+}
+
+// ======================================================================
+// Simulation loop
+// ======================================================================
+function simNew(){
+  S.sim=new World({amb:+$("simAmb").value,Ty:+$("simY0").value,noise:+$("simNoise").value,mode:S.gateMode||"auto"});
+  S.hist.sim=[];S.latest.sim=null;S.est.sim.reset(S.sim.Etot);S.gateOpenSec.sim=0;S.sessSec.sim=0;
+  S.logs=S.logs.filter(l=>l.src!=="sim");logEvt("Simulation reset","sim");
+  ingest("sim",S.sim.read(),0,0);S.fcTrue=null;S.fcSim=null;
+}
+let lastFrame=0,simAcc=0,lastSimRead=0;
+function frame(ts){
+  const dtReal=lastFrame?Math.min(0.25,(ts-lastFrame)/1000):0;lastFrame=ts;
+  if(S.simRun&&S.sim){
+    let todo=dtReal*S.simSpeed;
+    const step=1;
+    while(todo>=step){
+      S.sim.leak=$("simLeak").checked;
+      if($("simOpens").checked&&S.sim.lid<=0&&Math.random()<(+PLAN.opens||0)/86400*step)S.sim.lid=+PLAN.openSec||20;
+      S.sim.step(step);todo-=step;
+      if(S.sim.t-lastSimRead>=1){lastSimRead=S.sim.t;ingest("sim",S.sim.read(),S.sim.t,1)}
+    }
+    if(S.sim.empty()&&S.est.sim.depleted){S.simRun=false;logEvt("Ice is spent. Simulation paused.","sim");updSimBtn()}
+  }
+  try{renderCoolers(ts)}catch(e){console.error(e)}
+  requestAnimationFrame(frame);
+}
+
+// ======================================================================
+// Rendering
+// ======================================================================
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+function setupCanvas(c){
+  const dpr=window.devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;
+  if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}
+  const g=c.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,w,h);return {g,w,h};
+}
+function niceStep(range,count){const raw=range/count,p=Math.pow(10,Math.floor(Math.log10(raw))),n=raw/p;return (n<1.5?1:n<3?2:n<7?5:10)*p}
+// series: [{i:index, color}] over rows [t, ...]
+function drawChart(canvas,rows,opt){
+  const {g,w,h}=setupCanvas(canvas);
+  const col={fg:cssVar("--fg"),muted:cssVar("--muted"),line:cssVar("--line"),ok:cssVar("--ok"),accent:cssVar("--accent")};
+  const padL=38,padR=opt.right?42:12,padT=10,padB=26,W=w-padL-padR,H=h-padT-padB;
+  g.font="11px "+cssVar("--font");
+  if(!rows.length||W<20){g.fillStyle=col.muted;g.fillText(opt.empty||"Waiting for data…",padL,h/2);return}
+  const t0=rows[0][0],t1=Math.max(rows[rows.length-1][0],t0+60);
+  let lo=Infinity,hi=-Infinity;
+  for(const r of rows)for(const s of opt.series){const v=r[s.i];if(v!=null&&!isNaN(v)){lo=Math.min(lo,v);hi=Math.max(hi,v)}}
+  if(opt.band){lo=Math.min(lo,opt.band[0]);hi=Math.max(hi,opt.band[1])}
+  if(!isFinite(lo)){lo=0;hi=10}
+  if(hi-lo<4){const m=(hi+lo)/2;lo=m-2;hi=m+2}
+  const step=niceStep(hi-lo,5);lo=Math.floor(lo/step)*step;hi=Math.ceil(hi/step)*step;
+  const X=t=>padL+(t-t0)/(t1-t0)*W, Y=v=>padT+(1-(v-lo)/(hi-lo))*H;
+  // gate shading
+  if(opt.gateIdx!=null){
+    g.fillStyle=col.accent;g.globalAlpha=0.09;let start=null;
+    for(let k=0;k<rows.length;k++){const on=rows[k][opt.gateIdx];if(on&&start==null)start=rows[k][0];if((!on||k===rows.length-1)&&start!=null){g.fillRect(X(start),padT,Math.max(1,X(rows[k][0])-X(start)),H);start=null}}
+    g.globalAlpha=1;
+  }
+  if(opt.band){g.fillStyle=col.ok;g.globalAlpha=0.13;g.fillRect(padL,Y(opt.band[1]),W,Y(opt.band[0])-Y(opt.band[1]));g.globalAlpha=1}
+  if(opt.limits){g.strokeStyle=cssVar("--bad");g.lineWidth=1.2;g.setLineDash([5,4]);for(const v of opt.limits){if(v>lo&&v<hi){const y=Math.round(Y(v))+.5;g.beginPath();g.moveTo(padL,y);g.lineTo(padL+W,y);g.stroke()}}g.setLineDash([])}
+  // grid + y labels
+  g.strokeStyle=col.line;g.lineWidth=1;g.fillStyle=col.muted;g.textAlign="right";g.textBaseline="middle";
+  for(let v=lo;v<=hi+1e-9;v+=step){const y=Math.round(Y(v))+.5;g.beginPath();g.moveTo(padL,y);g.lineTo(padL+W,y);g.stroke();g.fillText((Math.abs(v)<1e-9?0:v).toFixed(step<1?1:0)+"°",padL-6,y)}
+  // x labels
+  g.textAlign="center";g.textBaseline="top";
+  const span=t1-t0,xs=niceStep(span,Math.max(2,Math.floor(W/90)));
+  const xStep=[60,300,600,900,1800,3600,7200,10800,21600,43200,86400].find(v=>v>=xs)||86400;
+  for(let t=Math.ceil(t0/xStep)*xStep;t<=t1;t+=xStep){const x=X(t);g.fillText(opt.xfmt?opt.xfmt(t):fClock(t),x,padT+H+7)}
+  // right axis (0–100%)
+  if(opt.right){g.textAlign="left";g.textBaseline="middle";for(let p=0;p<=100;p+=25){g.fillText(p+"%",padL+W+6,padT+(1-p/100)*H)}}
+  // lines
+  const stride=Math.max(1,Math.floor(rows.length/(W*1.5)));
+  const line=(fn,color,width)=>{g.strokeStyle=color;g.lineWidth=width;g.lineJoin="round";g.beginPath();let pen=false;
+    for(let k=0;k<rows.length;k+=stride){const y=fn(rows[k]);if(y==null){pen=false;continue}const x=X(rows[k][0]);pen?g.lineTo(x,y):g.moveTo(x,y);pen=true}
+    const lr=rows[rows.length-1],ly=fn(lr);if(ly!=null&&pen)g.lineTo(X(lr[0]),ly);g.stroke();
+    if(ly!=null){g.fillStyle=color;g.beginPath();g.arc(X(lr[0]),ly,3,0,7);g.fill()}};
+  for(const s of opt.series){const c=cssVar(s.color);line(r=>r[s.i]==null||isNaN(r[s.i])?null:Y(r[s.i]),c,s.w||2)}
+  if(opt.right){line(r=>padT+(1-r[opt.right.i])*H,cssVar(opt.right.color),1.6)}
+}
+
+function renderDash(){
+  const src=S.source,r=S.latest[src],e=S.est[src];
+  const live=src==="live";
+  $("helloTitle").textContent=live?"Cooler status":"Cooler status (simulated)";
+  $("helloSub").innerHTML=live?(S.conn.type?`Live from the ESP32-S3 over <b>${S.conn.type==="usb"?"USB":S.conn.type==="claude"?"the Claude app bridge":"WiFi"}</b>.`:`Not connected. Press <b>${mcpApi?"Claude app":"Connect USB"}</b>, or switch to <b>Simulation</b> for a demo.`):
+    `Virtual cooler at <b>${S.simSpeed}×</b> speed · sim time <b>${S.sim?fClock(S.sim.t):"0:00"}</b>${S.simRun?"":" · paused"}`;
+  if(CFG.profile)$("helloSub").insertAdjacentHTML("beforeend",` · Protecting <b></b> · safe ${CFG.safeLo}–${CFG.safeHi} °C`),$("helloSub").querySelectorAll("b")[$("helloSub").querySelectorAll("b").length-1].textContent=CFG.profile;
+  const val=(id,v)=>{$(id).innerHTML=v==null||isNaN(v)?"–":`${v.toFixed(1)}<small> °C</small>`};
+  val("vYeti",r&&r.yeti);val("vIce",r&&r.ice);val("vAmb",r&&r.amb);
+  const ty=r&&r.yeti;
+  $("icYeti").className="ic "+(ty==null?"warm":ty>CFG.hi?"warm":ty<CFG.lo?"ice":"ok");
+  const open=r&&r.gate;
+  $("vGate").textContent=r?(open?"Open":"Closed"):"–";
+  $("lGate").textContent="Gate · "+(r&&r.mode==="sim"?"following sim":r&&r.mode&&r.mode!=="auto"?"manual":"auto");
+  $("icGate").className="ic "+(open?"ice":"blue");
+  $("mBand").textContent=`${CFG.lo.toFixed(1)} – ${CFG.hi.toFixed(1)} °C`;
+  $("mFlow").textContent=fW(e.qS+e.qY);
+  $("mPull").textContent=fkJ(e.pull);
+  $("mDuty").textContent=S.sessSec[src]>0?Math.round(100*S.gateOpenSec[src]/S.sessSec[src])+"%":"–";
+  // gate card
+  const fl=r&&r.flap!=null?clamp(r.flap,0,1):(open?1:0);
+  $("gateFlap").style.transform=`rotate(${(-58*fl).toFixed(1)}deg)`;
+  const stp=CFG.devices.find(d=>d.type==="stepper");$("shaftBox").hidden=!stp;
+  if(stp){
+    const deg=stp.deg??90,sgn=stp.rev?1:-1,th=deg*Math.PI/180;
+    $("shaftPtr").style.transform=`rotate(${(sgn*deg*fl).toFixed(1)}deg)`;
+    $("shaftArc").setAttribute("d",`M32 9A23 23 0 ${deg>180?1:0} ${stp.rev?1:0} ${(32+sgn*23*Math.sin(th)).toFixed(1)} ${(32-23*Math.cos(th)).toFixed(1)}`);
+    const L=stp.rev?"right":"left",R=stp.rev?"left":"right";
+    $("shaftTxt").textContent=!r?"No data":r.moving?(open?`Turning ${L}…`:`Turning ${R}…`):(fl>0.5?`Turned ${L} ${deg}° · open`:"At 0° · closed");
+    $("shaftSub").textContent=`Opens by turning ${L} ${deg}°, closes by turning ${R} ${deg}°`+(live?"":" · simulated");
+  }
+  $("gateFlow").setAttribute("opacity",open?"1":"0");$("gateLed").setAttribute("fill",r?(open?"#22b35e":"#e5484d"):"var(--muted)");
+  $("gateBig").textContent=r?(open?"Open":"Closed"):"No data";
+  $("gateRule").textContent=`Opens above ${CFG.hi.toFixed(1)} °C, closes below ${CFG.lo.toFixed(1)} °C`;
+  $("gateWhy").textContent=!r?"Connect or start the simulation":r.moving?"Stepper is moving…":r.mode==="sim"?"Following the simulation":(r.mode==="open"?"Forced open":r.mode==="closed"?"Forced closed":
+    open?(ty>CFG.lo?"Cold air is sinking into the Yeti":"About to close"):(ty>CFG.hi?"About to open":ty<CFG.lo?"Yeti is colder than needed":"Yeti is inside the target band"));
+  // fuel
+  const fc=live?S.fcLive:S.fcSim;
+  const secs=e.depleted?0:(fc?fc.seconds:e.quickLeft);
+  const pct=Math.round(e.frac*100);
+  $("fuelTime").textContent=e.depleted?"Empty":(fc&&fc.capped?"> 14 days":fDur(secs));
+  const eta=!e.depleted&&live&&secs>0?new Date(Date.now()+secs*1000):null;
+  $("fuelEta").textContent=e.depleted?"Refill the Stanley with frozen ice to keep cooling":eta?`until the ice can no longer cool the Yeti · about ${eta.toLocaleString([], {weekday:"short",hour:"numeric",minute:"2-digit"})}`:"until the ice can no longer cool the Yeti";
+  $("fuelPct").textContent=pct+"%";
+  const bar=$("fuelBar");bar.querySelector("i").style.width=pct+"%";bar.className="bar"+(pct<=5?" empty":pct<=25?" low":"");
+  $("fuelUsed").textContent=fkJ(e.Eused)+" used";$("fuelTot").textContent=fkJ(e.Etot)+" stored";
+  const chip=$("fuelChip");chip.textContent=e.depleted?"Empty":pct>75?"Plenty":pct>25?"OK":"Low";chip.className="chip "+(e.depleted?"bad":pct>25?"cold":"warn");
+  $("fuelSub").textContent=`${FUEL.label} · ${Math.round(FUEL.mass)} g · loaded at ${FUEL.T0} °C`;
+  const C=2*Math.PI*48,u=C*(1-e.frac);
+  const alarm=live?(r&&r.alarm):(r&&simAlarm(r.yeti));
+  const ab=$("alarmBox");
+  if(alarm){ab.className="callout bad";ab.textContent=`${alarm==="cold"?"Too cold":"Too warm"} for ${CFG.profile||"the safe range"}: Yeti is ${fT(r.yeti)} °C, safe range ${CFG.safeLo}–${CFG.safeHi} °C.${live?" The ESP32's LED is blinking.":""}`;ab.hidden=false}
+  else if(e.leak){ab.className="callout warn";ab.textContent=`The Yeti lid may not be closed all the way: heat is getting in about ${(e.leakRatio||0).toFixed(1)}× faster than normal. Press it down firmly.`;ab.hidden=false}
+  else ab.hidden=true;
+  // energy kv
+  const Cy=yetiC().total;
+  $("kTot").textContent=fkJ(e.Etot);$("kUsed").textContent=fkJ(e.Eused);
+  $("kLeakS").textContent=fW(e.qS);$("kPullY").textContent=fW(e.qY);
+  $("kCy").textContent=Math.round(Cy)+" J/K";$("kQss").textContent=fW(e.qSS);
+  // chart
+  const rows=hist();const now=rows.length?rows[rows.length-1][0]:0;
+  const win=S.win,visible=win?rows.filter(r=>r[0]>=now-win):rows;
+  drawChart($("chartMain"),visible,{series:[{i:3,color:"--amb",w:1.5},{i:2,color:"--ice"},{i:1,color:"--warm",w:2.4}],band:[CFG.lo,CFG.hi],gateIdx:4,limits:CFG.safeLo>-50?[CFG.safeLo,CFG.safeHi]:null,
+    xfmt:live&&S.liveT0?(t=>new Date((S.liveT0+t)*1000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})):null,
+    empty:live?"Waiting for the ESP32… press Connect USB":"Press Start on the Simulation tab"});
+}
+
+function renderSim(){
+  const w=S.sim;if(!w)return;
+  $("simClock").textContent="Sim time "+fClock(w.t);
+  const e=S.est.sim;
+  $("cmpEst").textContent=`${Math.round(e.frac*100)}% · ${fkJ(e.rem)}`;
+  const tl=clamp(1-w.used/w.Etot,0,1);
+  $("cmpTrue").textContent=`${Math.round(tl*100)}% · ${fkJ(Math.max(0,w.Etot-w.used))}`;
+  $("cmpEstT").textContent=e.depleted?"Empty":S.fcSim?fDur(S.fcSim.seconds):"–";
+  $("cmpTrueT").textContent=w.empty()?"Empty":S.fcTrue?fDur(S.fcTrue.seconds):"–";
+  const r=S.latest.sim;
+  $("cmpProbe").textContent=r?`${fT(r.yeti)} / ${fT(r.ice)} / ${fT(r.amb)} °C`:"–";
+  $("cmpReal").textContent=`${fT(w.Ty)} / ${fT(w.iceT())} / ${fT(w.amb)} °C`;
+  if(S.fcTrue)drawChart($("chartForecast"),S.fcTrue.pts,{series:[{i:2,color:"--ice"},{i:1,color:"--warm",w:2}],band:[CFG.lo,CFG.hi],right:{i:3,color:"--accent"},xfmt:t=>fDur(t).replace(" 00 m","")});
+}
+
+// forecasts every ~2 s (cheap enough at dt = 10 s)
+function runForecasts(){
+  // live: seed a world from the estimator state
+  const mk=(src)=>{
+    const e=S.est[src],r=S.latest[src];if(!r||r.yeti==null)return null;
+    const w=new World({amb:e.ambS??r.amb??22,Ty:r.yeti,noise:0,gate:!!r.gate,mode:r.mode||"auto"});
+    w.Etot=e.Etot;w.used=e.Eused;w.t=0;
+    return forecast(w);
+  };
+  S.fcLive=mk("live");S.fcSim=mk("sim");
+  if(S.sim){const w=S.sim.clone();w.t=0;S.fcTrue=forecast(w)}
+}
+
+// ======================================================================
+// Views + controls
+// ======================================================================
+const VIEWS=["dash","sim","ai","fuel","pins","wiring"];
+function setView(v){
+  if(!VIEWS.includes(v))v="dash";
+  for(const id of VIEWS)$("view-"+id).hidden=id!==v;
+  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("on",a.dataset.view===v));
+  S.view=v;store.set("view",v);requestAnimationFrame(renderAll);
+}
+document.querySelectorAll("#nav a").forEach(a=>a.addEventListener("click",ev=>{ev.preventDefault();setView(a.dataset.view);try{history.replaceState(null,"","#"+a.dataset.view)}catch(e){}}));
+
+function setSource(s){
+  S.source=s;$("srcLive").classList.toggle("on",s==="live");$("srcSim").classList.toggle("on",s==="sim");
+  if(s==="sim"&&!S.sim)simNew();
+  const m=(S.latest[s]&&S.latest[s].mode)||"auto";
+  document.querySelectorAll("#gateSeg button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  renderLog();renderAll();
+}
+$("srcLive").onclick=()=>setSource("live");
+$("srcSim").onclick=()=>{setSource("sim");if(!S.simRun){S.simRun=true;updSimBtn()}};
+
+function setConn(){
+  const c=S.conn,on=!!c.type;
+  const label=on?(c.type==="usb"?"USB connected":c.type==="claude"?"Claude app · "+(c.bridge&&c.bridge.connected?c.bridge.port:"ESP32 not found"):"WiFi · "+CFG.ip):"Not connected";
+  const chip=$("connChip");chip.className="chip "+(on?"ok":"");chip.innerHTML=`<span class="dot ${on?"on":""}"></span>`;chip.append(label+(c.info&&c.info.fw?` · fw ${c.info.fw}`:""));
+  $("sideDot").className="dot "+(on?"on":"");$("sideConn").textContent=label;
+  $("btnUsb").lastChild.textContent=c.type==="usb"?"Disconnect":"Connect USB";
+  $("btnClaude").lastChild.textContent=c.type==="claude"?"Disconnect":"Claude app";
+  const bc=$("bridgeChip");if(bc){const okb=c.type==="claude"&&c.bridge&&c.bridge.connected;bc.textContent=c.type!=="claude"?"Not connected":okb?"Connected · "+c.bridge.port:"Bridge running · no ESP32";bc.className="chip "+(c.type!=="claude"?"":okb?"ok":"warn")}
+  $("btnWifi").lastChild.textContent=c.type==="wifi"?"Stop WiFi":"WiFi";
+  if(typeof updWireState==="function")updWireState();
+}
+$("btnUsb").onclick=usbConnect;$("btnWifi").onclick=wifiConnect;
+
+document.querySelectorAll("#winSeg button").forEach(b=>b.onclick=()=>{S.win=+b.dataset.w;document.querySelectorAll("#winSeg button").forEach(x=>x.classList.toggle("on",x===b));renderDash()});
+
+document.querySelectorAll("#gateSeg button").forEach(b=>b.onclick=async()=>{
+  const m=b.dataset.m;
+  if(S.source==="sim"){if(!S.sim)simNew();S.sim.mode=m;S.gateMode=m;S.sim.step(0.001);}
+  else if(!(await send({cmd:"gate",mode:m})))return;
+  document.querySelectorAll("#gateSeg button").forEach(x=>x.classList.toggle("on",x===b));
+  logEvt(m==="auto"?"Gate set to automatic":m==="open"?"Gate forced open":"Gate forced closed");
+});
+
+$("btnLid").onclick=()=>{
+  const e=S.est[S.source];e.lidAt=S.latest[S.source]?S.latest[S.source].t:0;e.lastOpenAt=e.lidAt;e.opens.push(e.lidAt);
+  if(S.source==="sim"&&S.sim)S.sim.lid=20;
+  logEvt("Yeti lid opened. The extra warmth will be counted as the gate cools it back down.");
+};
+$("btnRefuel").onclick=()=>{setView("fuel");toast("Check the amount, then press Load")};
+
+// ---------- simulation controls ----------
+function updSimBtn(){$("simRun").textContent=S.simRun?"Pause":"Start";const c=$("simState");c.textContent=S.simRun?"Running":"Paused";c.className="chip "+(S.simRun?"ok":"")}
+$("simRun").onclick=()=>{if(!S.sim)simNew();S.simRun=!S.simRun;updSimBtn();if(S.simRun&&S.source!=="sim")toast("Switch the data source to Simulation to watch it on the dashboard")};
+$("simReset").onclick=()=>{simNew();runForecasts();renderAll()};
+$("simSpeed").onchange=e=>{S.simSpeed=+e.target.value};
+$("simAmb").oninput=e=>{$("simAmbV").textContent=(+e.target.value).toFixed(1)+" °C";if(S.sim)S.sim.amb=+e.target.value};
+$("simNoise").onchange=e=>{if(S.sim)S.sim.noise=+e.target.value};
+$("simLid").onclick=()=>{if(!S.sim)simNew();S.sim.lid=20;S.est.sim.lidAt=S.sim.t;logEvt("Lid opened for 20 s","sim")};
+$("simItem").onclick=()=>{
+  if(!S.sim)simNew();const w=S.sim,Ci=250*4.0;
+  w.Ty=(w.Ty*(yetiC().total+w.extraC)+w.amb*Ci)/(yetiC().total+w.extraC+Ci);w.extraC+=Ci;
+  logEvt(`Added a 250 g drink at ${w.amb.toFixed(1)} °C`,"sim");
+};
+
+// ---------- fuel form ----------
+const UNIT={g:1,oz:28.3495,lb:453.592};
+function fillFuel(){
+  const sel=$("fMat");if(!sel.options.length){for(const [k,m] of Object.entries(MATERIALS)){const o=document.createElement("option");o.value=k;o.textContent=m.name;sel.append(o)}}
+  sel.value=FUEL.mat;$("fUnit").value=FUEL.unit||"g";
+  $("fMass").value=+(FUEL.mass/UNIT[FUEL.unit||"g"]).toFixed(1);
+  $("fT0").value=FUEL.T0;$("fTm").value=FUEL.Tm;$("fL").value=FUEL.L;$("fCs").value=FUEL.cs;$("fCl").value=FUEL.cl;
+  $("fSteel").value=FUEL.steel;$("fPre").checked=FUEL.pre;
+  renderFuelTable();
+}
+function readFuelForm(){
+  const unit=$("fUnit").value;
+  const f={mat:$("fMat").value,unit,mass:Math.max(1,(+$("fMass").value||0)*UNIT[unit]),T0:+$("fT0").value,Tm:+$("fTm").value,L:Math.max(0,+$("fL").value),
+    cs:Math.max(0.1,+$("fCs").value),cl:Math.max(0.1,+$("fCl").value),steel:Math.max(0,+$("fSteel").value),pre:$("fPre").checked};
+  f.label=f.mat==="custom"&&FUEL.aiName?FUEL.aiName:MATERIALS[f.mat].name;
+  return f;
+}
+function renderFuelTable(){
+  const f=readFuelForm(),E=fuelEnergy(f,22);
+  const rows=[
+    ["Warm from "+f.T0+" °C to melting",`${Math.round(f.mass)} g × ${f.cs} × ${(f.Tm-f.T0).toFixed(1)} K`,E.sens],
+    ["Melt at "+f.Tm+" °C",`${Math.round(f.mass)} g × ${f.L} J/g`,E.lat],
+    ["Meltwater up to "+E.Tend.toFixed(1)+" °C",`${Math.round(f.mass)} g × ${f.cl} × ${(E.Tend-f.Tm).toFixed(1)} K`,E.liq],
+    ["Chill the Stanley's steel",f.pre?"pre-chilled":`${f.steel} g × 0.50 × ${(22-f.Tm).toFixed(0)} K`,-E.chill]];
+  const tb=$("fTable");tb.textContent="";
+  for(const [a,b,c] of rows){const tr=document.createElement("tr");tr.innerHTML=`<td></td><td style="color:var(--muted)"></td><td class="r"></td>`;tr.children[0].textContent=a;tr.children[1].textContent=b;tr.children[2].textContent=(c<0?"−":"")+fkJ(Math.abs(c));tb.append(tr)}
+  const tr=document.createElement("tr");tr.className="total";tr.innerHTML=`<td>Usable cold</td><td></td><td class="r">${fkJ(E.total)}</td>`;tb.append(tr);
+  $("fTendLbl").textContent=CFG.lo.toFixed(1)+" °C";
+  const C=yetiC();
+  $("cySteel").textContent=Math.round(C.steel)+" J/K";$("cyAir").textContent=C.air.toFixed(2)+" J/K";
+  $("cyCont").textContent=Math.round(C.cont)+" J/K";$("cyTot").textContent=Math.round(C.total)+" J/K";
+  $("cyPull").textContent=fkJ(C.total*Math.max(0,22-(CFG.hi+CFG.lo)/2));
+  const mid=(CFG.hi+CFG.lo)/2,q=CFG.uaS*(22-f.Tm)+CFG.uaY*(22-mid);
+  $("fLife").textContent=fDur(Math.max(0,E.total-C.total*(22-mid))/q);
+  const warn=[];
+  if(f.T0>f.Tm)warn.push("The starting temperature is above the melting point, so the pack isn't frozen and only stores a little cold.");
+  if(f.Tm<CFG.lo-12)warn.push("This pack is much colder than your target. The gate will cycle more often and the Yeti may dip below "+CFG.lo+" °C right after it closes.");
+  if(f.Tm>=CFG.lo)warn.push(`This material melts at ${f.Tm} °C, which isn't cold enough to pull the Yeti below ${CFG.lo} °C. Lower the thresholds in Setup or pick a colder pack.`);
+  $("fWarn").hidden=!warn.length;$("fWarn").textContent=warn.join(" ");
+}
+["fMass","fT0","fTm","fL","fCs","fCl","fSteel","fPre","fUnit"].forEach(id=>$(id).addEventListener("input",renderFuelTable));
+$("fUnit").addEventListener("change",()=>{const prev=FUEL.unit||"g";const g=(+$("fMass").value||0)*UNIT[prev];FUEL.unit=$("fUnit").value;$("fMass").value=+(g/UNIT[FUEL.unit]).toFixed(1);renderFuelTable()});
+$("fMat").onchange=()=>{const m=MATERIALS[$("fMat").value];if($("fMat").value!=="custom"){$("fTm").value=m.Tm;$("fL").value=m.L;$("fCs").value=m.cs;$("fCl").value=m.cl}renderFuelTable()};
+$("fLoad").onclick=()=>{
+  const f=readFuelForm();FUEL=Object.assign({},FUEL,f);store.set("fuel",FUEL);
+  const amb=S.est.live.ambS??22;
+  S.est.live.reset(fuelEnergy(FUEL,amb).total);persistLive.last=0;persistLive();
+  logEvt(`Loaded ${Math.round(FUEL.mass)} g of ${FUEL.label}: ${fkJ(S.est.live.Etot)} of cold`,"live");
+  if(S.sim){simNew()}
+  toast("Fuel loaded. The meter is back to 100%.");runForecasts();renderAll();
+};
+
+// ---------- AI lookup ----------
+// Hackathon build: put an Anthropic API key between the quotes so AI works for anyone who opens this file
+// outside Claude. Anyone with the file can read it, so set a spending limit and delete the key afterwards.
+const BUILTIN_API_KEY="PASTE-KEY-HERE";
+function apiKey(){const typed=$("aiKey").value.trim();return typed||(BUILTIN_API_KEY.startsWith("sk-ant-")?BUILTIN_API_KEY:"")}
+// ---------- Claude on Amazon Bedrock, straight from the browser (AWS Signature Version 4) ----------
+// Hackathon build: fill in temporary AWS credentials below. Anyone with this file can use them until they expire.
+const AWS_CONFIG={
+  accessKeyId:"",
+  secretAccessKey:"",
+  sessionToken:"",
+  region:"us-east-1",
+  modelId:"us.anthropic.claude-sonnet-4-6"   // change if your account has a different Claude model enabled in Bedrock
+};
+const awsReady=()=>/^(AKIA|ASIA)/.test(AWS_CONFIG.accessKeyId||"")&&!!AWS_CONFIG.secretAccessKey;
+const enc=new TextEncoder();
+const hex=buf=>[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+// Plain-JS SHA-256 so signing also works where the browser's crypto.subtle isn't available
+function sha256js(bytes){
+  const K=new Uint32Array([0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+  const H=new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  const l=bytes.length,n=((l+9+63)>>6)<<6,m=new Uint8Array(n);m.set(bytes);m[l]=0x80;
+  const dv=new DataView(m.buffer);dv.setUint32(n-4,l*8>>>0);dv.setUint32(n-8,Math.floor(l/0x20000000));
+  const w=new Uint32Array(64),r=(x,s)=>(x>>>s)|(x<<(32-s));
+  for(let o=0;o<n;o+=64){
+    for(let i=0;i<16;i++)w[i]=dv.getUint32(o+i*4);
+    for(let i=16;i<64;i++){const a=w[i-15],b=w[i-2];w[i]=(w[i-16]+(r(a,7)^r(a,18)^(a>>>3))+w[i-7]+(r(b,17)^r(b,19)^(b>>>10)))>>>0}
+    let [a,b,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+w[i])>>>0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&b)^(a&c)^(b&c)))>>>0;h=g;g=f;f=e;e=(d+t1)>>>0;d=c;c=b;b=a;a=(t1+t2)>>>0}
+    H[0]+=a;H[1]+=b;H[2]+=c;H[3]+=d;H[4]+=e;H[5]+=f;H[6]+=g;H[7]+=h;
+  }
+  const out=new Uint8Array(32);const ov=new DataView(out.buffer);for(let i=0;i<8;i++)ov.setUint32(i*4,H[i]);return out.buffer;
+}
+function hmacjs(key,msg){
+  let k=new Uint8Array(key);if(k.length>64)k=new Uint8Array(sha256js(k));
+  const kp=new Uint8Array(64);kp.set(k);const ip=kp.map(x=>x^0x36),op=kp.map(x=>x^0x5c);
+  const inner=new Uint8Array(sha256js(new Uint8Array([...ip,...msg])));return sha256js(new Uint8Array([...op,...inner]));
+}
+const SUBTLE=globalThis.crypto&&crypto.subtle;
+async function sha256hex(data){const b=typeof data==="string"?enc.encode(data):data;return hex(SUBTLE?await SUBTLE.digest("SHA-256",b):sha256js(new Uint8Array(b)))}
+async function hmac(key,data){
+  const kb=typeof key==="string"?enc.encode(key):new Uint8Array(key);
+  if(!SUBTLE)return hmacjs(kb,enc.encode(data));
+  const k=await SUBTLE.importKey("raw",kb,{name:"HMAC",hash:"SHA-256"},false,["sign"]);return SUBTLE.sign("HMAC",k,enc.encode(data));
+}
+// Returns the headers to send. path must already be URI-encoded once; it's encoded again for the canonical request (non-S3 rule).
+async function sigv4({method,host,path,query="",headers={},body="",region,service,accessKeyId,secretAccessKey,sessionToken,amzDate}){
+  amzDate=amzDate||new Date().toISOString().replace(/[:-]|\.\d{3}/g,"");
+  const date=amzDate.slice(0,8);
+  const h=Object.assign({},headers,{host,"x-amz-date":amzDate});
+  if(sessionToken)h["x-amz-security-token"]=sessionToken;
+  const names=Object.keys(h).map(k=>k.toLowerCase()).sort();
+  const lower=Object.fromEntries(Object.entries(h).map(([k,v])=>[k.toLowerCase(),String(v).trim().replace(/\s+/g," ")]));
+  const canonHeaders=names.map(k=>`${k}:${lower[k]}\n`).join("");
+  const signed=names.join(";");
+  const canonPath=path.split("/").map(seg=>encodeURIComponent(seg)).join("/");
+  const payloadHash=await sha256hex(body);
+  const canonReq=[method,canonPath,query,canonHeaders,signed,payloadHash].join("\n");
+  const scope=`${date}/${region}/${service}/aws4_request`;
+  const toSign=["AWS4-HMAC-SHA256",amzDate,scope,await sha256hex(canonReq)].join("\n");
+  let k=await hmac("AWS4"+secretAccessKey,date);k=await hmac(k,region);k=await hmac(k,service);k=await hmac(k,"aws4_request");
+  const sig=hex(await hmac(k,toSign));
+  const out=Object.assign({},h,{Authorization:`AWS4-HMAC-SHA256 Credential=${accessKeyId}/${scope}, SignedHeaders=${signed}, Signature=${sig}`});
+  delete out.host;            // the browser sets Host itself
+  return out;
+}
+async function bedrockAsk(prompt,image,signal){
+  const c=AWS_CONFIG,host=`bedrock-runtime.${c.region}.amazonaws.com`,path=`/model/${encodeURIComponent(c.modelId)}/converse`;
+  const content=[];
+  if(image){const fmt=(image.type.split("/")[1]||"jpeg").replace("jpg","jpeg");if(!["png","jpeg","gif","webp"].includes(fmt))throw new Error("Use a JPEG, PNG, GIF or WebP photo.");
+    content.push({image:{format:fmt,source:{bytes:await blobToB64(image)}}})}
+  content.push({text:prompt});
+  const body=JSON.stringify({messages:[{role:"user",content}],inferenceConfig:{maxTokens:900}});
+  const headers=await sigv4({method:"POST",host,path,headers:{"content-type":"application/json"},body,region:c.region,service:"bedrock",accessKeyId:c.accessKeyId,secretAccessKey:c.secretAccessKey,sessionToken:c.sessionToken});
+  let r;
+  try{r=await fetch(`https://${host}${path}`,{method:"POST",headers,body,signal})}
+  catch(e){if(e&&e.name==="AbortError")throw {code:"cancelled"};throw new Error("Couldn't reach AWS Bedrock from this browser. AWS may be blocking direct browser calls; the fix is a small relay (ask Claude to build the Lambda relay).")}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){
+    const msg=j.message||j.Message||`HTTP ${r.status}`;
+    if(/expired/i.test(msg))throw new Error("The AWS credentials have expired. Paste fresh ones into AWS_CONFIG in this file.");
+    if(/access|not authorized|AccessDenied/i.test(msg))throw new Error(`AWS says: ${msg} (check that Claude is enabled in Amazon Bedrock for this account, and the model ID ${c.modelId}).`);
+    throw new Error("AWS Bedrock: "+msg);
+  }
+  return ((j.output&&j.output.message&&j.output.message.content)||[]).map(x=>x.text||"").join("");
+}
+// One place that decides how to reach Claude outside the Claude app
+async function directAsk(prompt,image,signal){
+  if(awsReady())return bedrockAsk(prompt,image,signal);
+  const key=apiKey();if(!key)throw new Error("Open this page inside Claude, or add an Anthropic API key on the AI tab.");
+  if($("aiKey").value.trim())store.set("key",key);
+  const content=[];if(image)content.push({type:"image",source:{type:"base64",media_type:image.type,data:await blobToB64(image)}});
+  content.push({type:"text",text:prompt});
+  const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",signal,headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-5-5",max_tokens:900,messages:[{role:"user",content}]})});
+  const j=await r.json();if(!r.ok)throw new Error((j.error&&j.error.message)||"Request failed");
+  return (j.content||[]).map(c=>c.text||"").join("");
+}
+
+let aiFile=null,aiCtl=null,samplePromise=(window.claude&&window.claude.use)?window.claude.use("sample").catch(()=>null):Promise.resolve(null);
+samplePromise.then(s=>{if(!s&&!apiKey()&&!awsReady()){$("aiKeyBox").hidden=false;$("aiKey").value=store.get("key","")}});
+const drop=$("aiDrop");
+$("aiFile").onchange=e=>setAiFile(e.target.files[0]);
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over")});
+drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");if(e.dataTransfer.files[0])setAiFile(e.dataTransfer.files[0])});
+function setAiFile(f){
+  if(!f||!/^image\//.test(f.type)){toast("Pick a JPEG, PNG or WebP photo");return}
+  aiFile=f;drop.textContent="";const img=document.createElement("img");img.alt="Selected cold pack";img.src=URL.createObjectURL(f);const s=document.createElement("span");s.textContent=f.name+" · tap to change";drop.append(img,s);
+}
+const AI_PROMPT=desc=>`You are helping size a passive ice-battery cooler. Identify the cold-storage medium in the photo and/or description and estimate its thermal properties.
+Description from the user: ${desc||"(none)"}
+Reply with only one JSON object, no other text:
+{"name": short product or material name,
+ "melt_temp_c": number (phase-change temperature),
+ "latent_heat_j_per_g": number,
+ "cp_solid_j_per_gk": number,
+ "cp_liquid_j_per_gk": number,
+ "est_mass_g": number or null (only if printed or clearly inferable),
+ "start_temp_c": number (typical temperature when taken out of a home freezer, or the pack's rated freeze temp),
+ "confidence": "low" | "medium" | "high",
+ "notes": one or two short sentences explaining the basis and any safety caveat (for example never seal dry ice in a bottle)}
+Example: {"name":"Water ice","melt_temp_c":0,"latent_heat_j_per_g":334,"cp_solid_j_per_gk":2.09,"cp_liquid_j_per_gk":4.19,"est_mass_g":null,"start_temp_c":-18,"confidence":"high","notes":"Pure water."}`;
+function parseJSONLoose(t){try{return JSON.parse(t)}catch(e){}const a=t.indexOf("{"),b=t.lastIndexOf("}");if(a>=0&&b>a)return JSON.parse(t.slice(a,b+1));throw new Error("No JSON in reply")}
+async function blobToB64(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(b)})}
+$("aiGo").onclick=async()=>{
+  const desc=$("aiDesc").value.trim();
+  if(!desc&&!aiFile){toast("Add a photo or a short description first");return}
+  const out=$("aiOut");out.innerHTML="<p class='note'>Thinking… this usually takes 10–40 seconds.</p>";
+  $("aiGo").disabled=true;$("aiStop").hidden=false;aiCtl=new AbortController();
+  try{
+    let data;const sample=await samplePromise;
+    if(sample){
+      const opts={signal:aiCtl.signal,modelTier:"default"};
+      if(aiFile){const lim=await sample.limits().catch(()=>null);if(lim&&lim.images)opts.images=[aiFile];else if(!desc)throw {code:"images_unavailable"}}
+      data=await sample.json(AI_PROMPT(desc),opts);
+    }else{
+data=parseJSONLoose(await directAsk(AI_PROMPT(desc),aiFile,aiCtl.signal));
+    }
+    showAi(data);
+  }catch(e){
+    const code=e&&e.code;
+    out.innerHTML="";const p=document.createElement("p");p.className="note";
+    p.textContent=code==="cancelled"?"Stopped.":code==="not_granted"?"Claude access wasn't allowed for this page, so fill the values in by hand.":
+      code==="images_unavailable"?"Photos can't be sent from this view. Add a text description instead.":code==="rate_limited"?"Too many requests right now. Try again in a minute.":
+      code==="invalid_json"?"The answer couldn't be read. Try again with a clearer description.":(e&&e.message)||"Something went wrong. Try again.";
+    out.append(p);
+  }finally{$("aiGo").disabled=false;$("aiStop").hidden=true}
+};
+$("aiStop").onclick=()=>aiCtl&&aiCtl.abort();
+function showAi(d){
+  const n=v=>typeof v==="number"&&isFinite(v)?v:null;
+  const out=$("aiOut");out.innerHTML="";
+  const h=document.createElement("h2");h.textContent=d.name||"Estimate";h.style.marginBottom="6px";
+  const chip=document.createElement("span");chip.className="chip "+(d.confidence==="high"?"ok":d.confidence==="low"?"warn":"cold");chip.textContent=(d.confidence||"unknown")+" confidence";
+  const kv=document.createElement("div");kv.className="kv";kv.style.margin="12px 0";
+  const add=(k,v)=>{const a=document.createElement("span");a.textContent=k;const b=document.createElement("b");b.textContent=v;kv.append(a,b)};
+  add("Melting point",n(d.melt_temp_c)!=null?d.melt_temp_c+" °C":"–");
+  add("Latent heat",n(d.latent_heat_j_per_g)!=null?d.latent_heat_j_per_g+" J/g":"–");
+  add("Specific heat solid / liquid",`${n(d.cp_solid_j_per_gk)??"–"} / ${n(d.cp_liquid_j_per_gk)??"–"} J/g·K`);
+  add("Mass",n(d.est_mass_g)!=null?d.est_mass_g+" g":"not visible (keep yours)");
+  add("Starting temp",n(d.start_temp_c)!=null?d.start_temp_c+" °C":"–");
+  const note=document.createElement("p");note.className="note";note.textContent=d.notes||"";
+  const btn=document.createElement("button");btn.className="btn primary";btn.type="button";btn.textContent="Use these values";
+  btn.onclick=()=>{
+    $("fMat").value="custom";
+    if(n(d.melt_temp_c)!=null)$("fTm").value=d.melt_temp_c;
+    if(n(d.latent_heat_j_per_g)!=null)$("fL").value=d.latent_heat_j_per_g;
+    if(n(d.cp_solid_j_per_gk)!=null)$("fCs").value=d.cp_solid_j_per_gk;
+    if(n(d.cp_liquid_j_per_gk)!=null)$("fCl").value=d.cp_liquid_j_per_gk;
+    if(n(d.start_temp_c)!=null)$("fT0").value=d.start_temp_c;
+    if(n(d.est_mass_g)!=null){$("fUnit").value="g";FUEL.unit="g";$("fMass").value=d.est_mass_g}
+    FUEL.aiName=d.name||"Custom pack";renderFuelTable();toast("Values filled in. Press Load when ready.");
+  };
+  const save=document.createElement("button");save.className="btn";save.type="button";save.textContent="Save to library";
+  save.onclick=()=>{const v=k=>n(d[k]);if(v("melt_temp_c")==null||v("latent_heat_j_per_g")==null){toast("This result is missing its melting point or latent heat.");return}
+    addPack({id:uid(),name:String(d.name||"Coolant").slice(0,40),Tm:v("melt_temp_c"),L:v("latent_heat_j_per_g"),cs:v("cp_solid_j_per_gk")??2,cl:v("cp_liquid_j_per_gk")??4,T0:v("start_temp_c")??-18});save.disabled=true};
+  const row=document.createElement("div");row.className="row";row.append(btn,save);
+  out.append(h,chip,kv,note,row);
+}
+
+// ---------- setup form (thermostat, WiFi, thermal model) ----------
+function fillSetup(){
+  $("cHi").value=CFG.hi;$("cLo").value=CFG.lo;$("cPeriod").value=CFG.period;$("cUsb").value=CFG.usb;
+  $("wSsid").value=CFG.ssid||"";$("wIp").value=CFG.ip||"";
+  $("tUaY").value=+CFG.uaY.toFixed(4);$("tUaS").value=CFG.uaS;$("tUaGo").value=CFG.uaGo;$("tUaGc").value=CFG.uaGc;
+  $("tSteel").value=CFG.ySteel;$("tAir").value=CFG.yAir;$("tCm").value=CFG.cMass;$("tCc").value=CFG.cC;$("tLearn").checked=CFG.learn;
+}
+function readSetup(){
+  const hi=+$("cHi").value,lo=+$("cLo").value;
+  if(hi!==CFG.hi||lo!==CFG.lo||Math.max(800,+$("cPeriod").value||1000)!==CFG.period)markDirty();
+  CFG.hi=hi;CFG.lo=lo;if(CFG.lo>=CFG.hi){CFG.lo=+(CFG.hi-0.5).toFixed(1);$("cLo").value=CFG.lo}
+  CFG.period=Math.max(800,+$("cPeriod").value||1000);CFG.usb=$("cUsb").value;
+  CFG.ssid=$("wSsid").value;CFG.ip=$("wIp").value.trim();
+  CFG.uaY=Math.max(0.001,+$("tUaY").value);CFG.uaS=Math.max(0.001,+$("tUaS").value);CFG.uaGo=Math.max(0.001,+$("tUaGo").value);CFG.uaGc=Math.max(0,+$("tUaGc").value);
+  CFG.ySteel=Math.max(0,+$("tSteel").value);CFG.yAir=Math.max(0,+$("tAir").value);CFG.cMass=Math.max(0,+$("tCm").value);CFG.cC=Math.max(0.1,+$("tCc").value);CFG.learn=$("tLearn").checked;
+  saveCfg();renderFuelTable();
+}
+document.querySelectorAll("#view-pins input,#view-pins select").forEach(el=>el.addEventListener("change",readSetup));
+$("wSend").onclick=async()=>{readSetup();if(S.conn.type!=="usb"){toast("Connect over USB to send WiFi details");return}send({cmd:"wifi",ssid:$("wSsid").value,pass:$("wPass").value});$("wPass").value=""};
+$("tReset").onclick=()=>{Object.assign(CFG,DEFAULT_MODEL);saveCfg();fillSetup();renderFuelTable();toast("Thermal model restored")};
+
+// ---------- wiring editor ----------
+const ROLES=[["amb","Ambient"],["ice","Ice box"],["yeti","Cooler (Yeti)"],["none","Not used"]];
+const ROLE_NAME=Object.fromEntries(ROLES);
+const ROLE_COLOR={amb:"--amb",ice:"--ice",yeti:"--warm",none:"--muted"};
+const TYPES=[["temp","Temp sensors (1-Wire)"],["stepper","Stepper motor"],["servo","Servo (gate)"],["fan","Fan"],["led","LED"],["rgb","Onboard RGB LED"]];
+const devPins=d=>d.type==="stepper"?(d.pins||[d.pin]):[d.pin];
+const usedBy=p=>CFG.devices.find(x=>devPins(x).includes(p));
+const TYPE_NAME=Object.fromEntries(TYPES);
+const LED_COLORS=[["green","Green"],["red","Red"],["blue","Blue"],["yellow","Yellow"],["white","White"]];
+const S3_PINS=[...Array(19).keys(),21,...Array.from({length:16},(_,i)=>33+i)];
+const liveSensors={};  // addr -> °C from the ESP32
+const scanFound={};    // pin -> [{addr,c}]
+let wiringDirty=store.get("dirty",false);
+
+const addrNorm=s=>(s||"").toUpperCase().replace(/[^0-9A-F]/g,"");
+function pinIssue(p){
+  if(!Number.isInteger(p)||p<0||p>48||(p>=22&&p<=32)||p===19||p===20)return ["err","isn't usable on the ESP32-S3"];
+  if(p===0||p===3||p===45||p===46)return ["warn","is a boot strapping pin and can stop the board from booting"];
+  if(p>=33&&p<=37)return ["warn","is used by PSRAM on N8R8/N16R8 boards"];
+  if(p===43||p===44)return ["warn","is the UART0 TX/RX pin"];
+  return null;
+}
+function pinLabel(p){
+  const notes={0:"boot",3:"boot",45:"boot",46:"boot",43:"UART TX",44:"UART RX",38:"RGB LED v1.1",48:"RGB LED"};
+  let n=notes[p]||(p>=33&&p<=37?"PSRAM":"");
+  return "GPIO "+p+(n?` (${n})`:"");
+}
+function markDirty(){wiringDirty=true;store.set("dirty",true);updWireState()}
+function updWireState(){
+  const c=$("wireState");if(!c)return;
+  c.textContent=wiringDirty?"Not sent yet":(S.conn.info?"Matches ESP32":"Saved in this browser");
+  c.className="chip "+(wiringDirty?"warn":S.conn.info?"ok":"");
+}
+function freePin(prefer){
+  const used=new Set(CFG.devices.flatMap(devPins));
+  for(const p of [prefer,5,6,7,15,16,17,18,8,9,10,11,12,13,14,1,2,21,39,40,41,42,47])if(p!=null&&!used.has(p))return p;
+  return S3_PINS.find(p=>!used.has(p)&&!pinIssue(p));
+}
+function sel(opts,val,attrs){
+  return `<select ${attrs}>`+opts.map(([v,t,dis])=>`<option value="${v}"${String(v)===String(val)?" selected":""}${dis?" disabled":""}>${t}</option>`).join("")+`</select>`;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function renderWiring(){
+  const list=$("devList");if(!list)return;
+  let h="";
+  CFG.devices.forEach((d,i)=>{
+    const taken=p=>{const u=usedBy(p);return !!u&&u!==d};
+    const pinOpts=(d.type==="rgb"?[48,38]:S3_PINS).map(p=>[p,pinLabel(p),taken(p)]);
+    h+=`<div class="dev" data-i="${i}">
+      <div class="dev-head">
+        <div class="f"><label>${d.type==="stepper"?"IN1 → GPIO":"GPIO"}</label>${sel(pinOpts,d.pin,`data-k="pin" aria-label="GPIO for row ${i+1}"`)}</div>
+        <div class="f"><label>Used for</label>${sel(TYPES,d.type,`data-k="type" aria-label="Part on row ${i+1}"`)}</div>`;
+    if(d.type==="servo")h+=`<div class="f"><label>Open angle</label><input type="number" min="0" max="180" data-k="open" value="${d.open??90}"></div>
+        <div class="f"><label>Closed angle</label><input type="number" min="0" max="180" data-k="closed" value="${d.closed??0}"></div>`;
+    if(d.type==="fan")h+=`<div class="f"><label>Runs when</label>${sel([["open","Gate is open"],["closed","Gate is closed"]],d.when||"open",'data-k="when"')}</div>`;
+    if(d.type==="led")h+=`<div class="f"><label>Lights when</label>${sel([["open","Gate is open"],["closed","Gate is closed"]],d.when||"open",'data-k="when"')}</div>
+        <div class="f"><label>LED color</label>${sel(LED_COLORS,d.color||"green",'data-k="color"')}</div>`;
+    if(d.type==="rgb")h+=`<div class="f"><label>Brightness <span class="num">${Math.round((d.bright??40)/2.55)}%</span></label><input type="range" min="5" max="255" data-k="bright" value="${d.bright??40}"></div>
+        <div class="f"><label>Shows</label><div class="rgb-key"><span style="--c:#22b35e">Open</span><span style="--c:#e5484d">Closed</span></div></div>`;
+    if(d.type==="stepper"){
+      const ps=d.pins||[d.pin];
+      for(let k=1;k<4;k++)h+=`<div class="f"><label>IN${k+1} → GPIO</label>${sel(S3_PINS.map(p=>[p,pinLabel(p),taken(p)]),ps[k],`data-k="sp${k}" aria-label="IN${k+1} pin"`)}</div>`;
+      h+=`<div class="f"><label>Opens by (°)</label><input type="number" min="5" max="360" step="5" data-k="deg" value="${d.deg??90}"></div>
+        <div class="f"><label>Speed (RPM)</label><input type="number" min="1" max="15" step="1" data-k="rpm" value="${d.rpm??10}"><span class="hint">28BYJ-48 tops out near 15</span></div>
+        <div class="f"><label>Opening turns</label>${sel([["0","Left ↺ (closes right)"],["1","Right ↻ (closes left)"]],d.rev?"1":"0",'data-k="rev"')}<span class="hint">Looking at the shaft</span></div>
+        <div class="f"><label>Steps per turn</label><input type="number" min="100" step="1" data-k="spr" value="${d.spr??4096}"><span class="hint">28BYJ-48 half-step: 4096</span></div>
+        <label class="check" style="width:auto"><input type="checkbox" data-k="release" ${d.release!==false?"checked":""}> Cut coil power when stopped</label>`;
+    }
+    h+=`<div class="dev-actions">`;
+    if(d.type!=="temp")h+=`<button class="btn small" type="button" data-act="test-open">Test open</button><button class="btn small" type="button" data-act="test-closed">Test closed</button>`;
+    else h+=`<button class="btn small" type="button" data-act="scan">Scan this wire</button>`;
+    h+=`<button class="btn small" type="button" data-act="del" aria-label="Remove GPIO ${d.pin}">Remove</button></div></div>`;
+    if(d.type==="stepper")h+=`<div class="step-tools">
+        <button class="btn small primary" type="button" data-act="sweep">Open ${d.deg??90}° → close → open</button>
+        <span class="note">Calibrate:</span>
+        <button class="btn small" type="button" data-act="jog-" aria-label="Turn back 5 degrees">◀ 5°</button>
+        <button class="btn small" type="button" data-act="jog+" aria-label="Turn forward 5 degrees">5° ▶</button>
+        <button class="btn small" type="button" data-act="zero">Set here as closed</button>
+        <span class="note">The motor can't sense its position. It treats wherever the flap sits at power-up as closed.</span></div>`;
+    if(d.type==="temp"){
+      h+=`<div class="table-wrap"><table class="sens"><thead><tr><th>Probe address</th><th>Label</th><th class="r">Reading</th><th></th></tr></thead><tbody>`;
+      (d.sensors||[]).forEach((s,j)=>{
+        const a=addrNorm(s.addr),c=liveSensors[a];
+        h+=`<tr data-j="${j}"><td><input class="addr num" data-k="addr" value="${esc(a)}" maxlength="23" spellcheck="false" aria-label="Probe address"></td>
+          <td>${sel(ROLES,s.role||"none",'data-k="role" aria-label="Probe label"')}</td>
+          <td class="r" id="rd-${a}">${c==null?"–":c.toFixed(2)+" °C"}</td>
+          <td><button class="btn small" type="button" data-act="del-s" aria-label="Remove probe">×</button></td></tr>`;
+      });
+      if(!(d.sensors||[]).length)h+=`<tr><td colspan="4" class="note">No probes yet. Scan this wire or add one by address.</td></tr>`;
+      h+=`</tbody></table></div><div class="row" style="margin-top:8px"><button class="btn small" type="button" data-act="add-s">+ Add probe</button></div>`;
+      const found=scanFound[d.pin];
+      if(found){
+        const listed=new Set((d.sensors||[]).map(s=>addrNorm(s.addr)));
+        h+=`<div class="found"><span class="note">Found on GPIO ${d.pin}:</span>`;
+        if(!found.length)h+=`<span class="note">nothing. Check the pull-up resistor and wiring.</span>`;
+        for(const f of found)h+=`<span class="chip ${listed.has(f.addr)?"ok":""}"><span class="num">${f.addr}</span>${f.c!=null?" · "+f.c.toFixed(1)+" °C":""}${listed.has(f.addr)?" · listed":`<button class="link" type="button" data-act="add-found" data-addr="${f.addr}">Add</button>`}</span>`;
+        h+=`<span class="note">Tip: hold one probe in your hand and scan again. The one that warms up is that probe.</span></div>`;
+      }
+    }
+    h+=`</div>`;
+  });
+  list.innerHTML=h||`<p class="note">No GPIOs set up yet.</p>`;
+  drawDiagram();validateWiring();updWireState();renderGateOuts();
+}
+
+$("devList").addEventListener("change",e=>{
+  const el=e.target,k=el.dataset.k;if(!k)return;
+  const dv=el.closest(".dev");if(!dv)return;const d=CFG.devices[+dv.dataset.i];
+  const tr=el.closest("tr[data-j]");
+  if(tr){const s=d.sensors[+tr.dataset.j];if(k==="addr")s.addr=addrNorm(el.value);else s[k]=el.value}
+  else if(/^sp\d$/.test(k)){d.pins=(d.pins||[d.pin]).slice();d.pins[+k[2]]=+el.value}
+  else if(k==="pin"){d.pin=+el.value;if(d.type==="stepper"){d.pins=(d.pins||[d.pin]).slice();d.pins[0]=d.pin}}
+  else if(k==="deg")d.deg=clamp(+el.value||90,5,360);
+  else if(k==="rpm")d.rpm=clamp(+el.value||10,1,15);
+  else if(k==="spr")d.spr=clamp(Math.round(+el.value)||4096,100,20000);
+  else if(k==="rev")d.rev=el.value==="1";
+  else if(k==="release")d.release=el.checked;
+  else if(k==="type"){
+    d.type=el.value;
+    if(d.type==="temp"&&!d.sensors)d.sensors=[];
+    if(d.type==="rgb"){d.pin=CFG.devices.some(x=>x!==d&&x.pin===48)?38:48;d.bright=d.bright??40}
+    if(d.type==="servo"){d.open=d.open??90;d.closed=d.closed??0}
+    if(d.type==="led"){d.when=d.when||"open";d.color=d.color||"green"}
+    if(d.type==="fan")d.when=d.when||"open";
+    if(d.type==="stepper"&&!(d.pins&&d.pins.length===4)){
+      const free=S3_PINS.filter(p=>!pinIssue(p)&&(!usedBy(p)||usedBy(p)===d));
+      const pref=[15,16,17,18].every(p=>free.includes(p))?[15,16,17,18]:free.slice(0,4);
+      Object.assign(d,{pins:pref,pin:pref[0],deg:90,rpm:10,spr:4096,rev:false,release:true});
+    }
+  }
+  else if(k==="open"||k==="closed"||k==="bright")d[k]=clamp(+el.value,0,255);
+  else d[k]=el.value;
+  saveCfg();markDirty();renderWiring();
+});
+$("devList").addEventListener("input",e=>{
+  const el=e.target;if(el.dataset.k!=="bright")return;
+  const lab=el.closest(".f").querySelector(".num");if(lab)lab.textContent=Math.round(el.value/2.55)+"%";
+});
+$("devList").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const dv=b.closest(".dev"),i=+dv.dataset.i,d=CFG.devices[i],act=b.dataset.act;
+  if(act==="del"){CFG.devices.splice(i,1);delete scanFound[d.pin]}
+  else if(act==="add-s"){(d.sensors=d.sensors||[]).push({addr:"28",role:"none"})}
+  else if(act==="del-s"){d.sensors.splice(+b.closest("tr").dataset.j,1)}
+  else if(act==="add-found"){(d.sensors=d.sensors||[]).push({addr:b.dataset.addr,role:"none"})}
+  else if(act==="scan"){if(await send({cmd:"scan",pins:[d.pin]}))toast("Scanning GPIO "+d.pin+"…");return}
+  else if(act==="sweep"||act==="jog-"||act==="jog+"||act==="zero"){
+    if(wiringDirty){toast("Send the wiring to the ESP32 first, then test");return}
+    if(act==="sweep")send({cmd:"sweep",pin:d.pin});
+    else if(act==="zero")send({cmd:"zero",pin:d.pin});
+    else send({cmd:"jog",pin:d.pin,deg:act==="jog+"?5:-5});
+    return}
+  else if(act==="test-open"||act==="test-closed"){
+    if(wiringDirty){toast("Send the wiring to the ESP32 first, then test");return}
+    send({cmd:"test",pin:d.pin,state:act==="test-open"?"open":"closed"});return}
+  saveCfg();markDirty();renderWiring();
+  if(act==="add-s"){const ins=$("devList").querySelectorAll(`.dev[data-i="${i}"] input.addr`);const last=ins[ins.length-1];if(last){last.focus();last.setSelectionRange(2,2)}}
+});
+$("addDev").onclick=()=>{CFG.devices.push({pin:freePin(),type:"led",when:"open",color:"green"});saveCfg();markDirty();renderWiring()};
+$("resetWiring").onclick=()=>{CFG.devices=JSON.parse(JSON.stringify(DEFAULT_DEVICES));saveCfg();markDirty();renderWiring();toast("Default wiring restored. Send it to apply.")};
+
+function validateWiring(){
+  const msgs=[];let bad=false;
+  const seenPin={},seenAddr={},roleCount={amb:0,ice:0,yeti:0};
+  for(const d of CFG.devices){
+    if(d.type==="stepper"&&devPins(d).length!==4){msgs.push(["err","The stepper needs four pins, IN1 to IN4."]);bad=true}
+    for(const p of devPins(d)){
+      if(seenPin[p]){msgs.push(["err",`GPIO ${p} is used twice.`]);bad=true}seenPin[p]=1;
+      const iss=pinIssue(p);if(iss){msgs.push([iss[0],`GPIO ${p} ${iss[1]}.`]);if(iss[0]==="err")bad=true}
+    }
+    if(d.type==="temp")for(const s of d.sensors||[]){
+      const a=addrNorm(s.addr);
+      if(a.length!==16){msgs.push(["err",`Probe address "${a||"(empty)"}" on GPIO ${d.pin} needs 16 hex digits, like 28C937D500000042.`]);bad=true;continue}
+      if(!a.startsWith("28"))msgs.push(["warn",`${a} doesn't start with 28, which every DS18B20 address does. Double-check it.`]);
+      if(seenAddr[a]){msgs.push(["err",`${a} is listed twice.`]);bad=true}seenAddr[a]=1;
+      if(roleCount[s.role]!=null)roleCount[s.role]++;
+    }
+  }
+  if(!roleCount.yeti)msgs.push(["warn","No probe is labelled Cooler (Yeti), so the gate can't open or close on its own."]);
+  for(const r of ["amb","ice","yeti"])if(roleCount[r]>1)msgs.push(["info",`${roleCount[r]} probes are labelled ${ROLE_NAME[r]}. The ESP32 averages them.`]);
+  if(!roleCount.amb)msgs.push(["info","No ambient probe, so the fuel estimate assumes 22 °C room temperature."]);
+  if(!CFG.devices.some(d=>d.type!=="temp"))msgs.push(["info","Nothing shows the gate state yet. Add an LED, the onboard RGB LED or a servo."]);
+  const box=$("wireMsgs");box.textContent="";
+  for(const [lvl,m] of msgs){const el=document.createElement("div");el.className="callout "+(lvl==="err"?"bad":lvl==="warn"?"warn":"");el.textContent=m;box.append(el)}
+  $("sendCfg").disabled=bad;$("sendCfg2").disabled=bad;
+  return !bad;
+}
+
+const cfgPayload=()=>({devices:CFG.devices.map(d=>{
+  const o={pin:d.pin,type:d.type};
+  if(d.type==="temp")o.sensors=(d.sensors||[]).map(s=>({addr:addrNorm(s.addr),role:s.role||"none"}));
+  if(d.type==="servo"){o.open=d.open??90;o.closed=d.closed??0}
+  if(d.type==="fan"||d.type==="led")o.when=d.when||"open";
+  if(d.type==="rgb")o.bright=d.bright??40;
+  if(d.type==="stepper"){o.pins=devPins(d);o.deg=d.deg??90;o.rpm=d.rpm??10;o.spr=d.spr??4096;o.rev=!!d.rev;o.release=d.release!==false}
+  return o}),hi:CFG.hi,lo:CFG.lo,period:CFG.period,safeLo:CFG.safeLo,safeHi:CFG.safeHi,profile:CFG.profile||""});
+async function sendConfig(){readSetup();if(!validateWiring()){setView("wiring");return}if(await send({cmd:"set_cfg",cfg:cfgPayload()}))toast("Sending…")}
+$("sendCfg").onclick=sendConfig;$("sendCfg2").onclick=sendConfig;
+$("readCfg").onclick=()=>{wiringDirty=false;store.set("dirty",false);send({cmd:"get_cfg"})};
+
+// adopt the ESP32's wiring (keeps local colors for LEDs)
+function adoptDeviceCfg(c,saved){
+  if(!c||!Array.isArray(c.devices))return;
+  if(wiringDirty&&!saved){toast("The ESP32 has different wiring. Your unsent changes are kept; press Send or Read from ESP32.");updWireState();return}
+  const oldColor={};for(const d of CFG.devices)if(d.type==="led")oldColor[d.pin]=d.color;
+  CFG.devices=c.devices.map(d=>Object.assign({},d,d.type==="led"?{color:oldColor[d.pin]||"green"}:{},d.type==="temp"?{sensors:(d.sensors||[]).map(s=>({addr:addrNorm(s.addr),role:s.role}))}:{}));
+  ["hi","lo","period","safeLo","safeHi","profile"].forEach(k=>{if(c[k]!=null)CFG[k]=c[k]});
+  wiringDirty=false;store.set("dirty",false);saveCfg();fillSetup();renderWiring();
+}
+function updateReadings(list){
+  for(const s of list||[]){const a=addrNorm(s.addr);liveSensors[a]=s.c;const el=document.getElementById("rd-"+a);if(el)el.textContent=s.c==null?"no reply":s.c.toFixed(2)+" °C"}
+}
+function renderGateOuts(){
+  const el=$("gateOuts");if(!el)return;
+  const outs=CFG.devices.filter(d=>d.type!=="temp").map(d=>d.type==="stepper"?`stepper on GPIO ${devPins(d).join("/")} (${d.deg??90}°)`:d.type==="rgb"?`onboard LED (GPIO ${d.pin})`:d.type==="led"?`${d.color||""} LED on GPIO ${d.pin}`:`${TYPE_NAME[d.type].toLowerCase()} on GPIO ${d.pin}`);
+  el.textContent=outs.length?"Shown by: "+outs.join(", "):"No gate output wired yet";
+}
+
+// ---------- diagram ----------
+const LED_HEX={green:"#22b35e",red:"#e5484d",blue:"#3b6ce6",yellow:"#e8b10c",white:"#c9ced8"};
+function drawDiagram(){
+  const temps=CFG.devices.filter(d=>d.type==="temp"),outs=CFG.devices.filter(d=>d.type!=="temp");
+  const W=820,bx=330,bw=160;
+  const lH=temps.map(d=>48+20*Math.max(1,(d.sensors||[]).length)),rH=outs.map(()=>64);
+  const gap=18,lTot=lH.reduce((a,b)=>a+b+gap,0),rTot=rH.reduce((a,b)=>a+b+gap,0);
+  const H=Math.max(lTot,rTot,200)+90;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Wiring diagram">`;
+  s+=`<rect x="${bx}" y="30" width="${bw}" height="${H-60}" rx="8" fill="var(--surface2)" stroke="var(--line)" stroke-width="2"/>`;
+  s+=`<text x="${bx+bw/2}" y="${H-58}" text-anchor="middle" style="font-weight:600">ESP32-S3 DevKit</text>`;
+  s+=`<text x="${bx+bw/2}" y="${H-40}" text-anchor="middle" class="muted">3V3 · 5V · GND</text>`;
+  let y=40;
+  temps.forEach((d,i)=>{
+    const h=lH[i],x=20,w=230,cy=y+24;
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="var(--surface)" stroke="var(--line)"/>`;
+    s+=`<text x="${x+12}" y="${y+20}" style="font-weight:500">1-Wire temp bus</text>`;
+    const ss=d.sensors||[];
+    if(!ss.length)s+=`<text x="${x+12}" y="${y+42}" class="muted">no probes yet</text>`;
+    ss.forEach((p,j)=>{const yy=y+42+20*j;s+=`<circle cx="${x+17}" cy="${yy-4}" r="5" fill="var(${ROLE_COLOR[p.role]||"--muted"})"/><text x="${x+28}" y="${yy}">${esc(ROLE_NAME[p.role]||"Not used")}</text><text x="${x+w-10}" y="${yy}" text-anchor="end" class="muted mono">…${esc(addrNorm(p.addr).slice(-6))}</text>`});
+    s+=`<path d="M${x+w} ${cy}H${bx}" stroke="var(--fg)" stroke-width="1.6" fill="none"/>`;
+    s+=`<rect x="${x+w+22}" y="${cy-18}" width="18" height="8" rx="2" fill="var(--surface)" stroke="var(--muted)"/><path d="M${x+w+31} ${cy}v-10" stroke="var(--muted)"/>`;
+    s+=`<text x="${x+w+46}" y="${cy-11}" class="muted">4.7 kΩ to 3V3</text>`;
+    s+=`<circle cx="${bx}" cy="${cy}" r="4" fill="var(--fg)"/><text x="${bx+10}" y="${cy+4}">GPIO ${d.pin}</text>`;
+    s+=`<text x="${x+w+8}" y="${cy+16}" class="muted">data</text>`;
+    y+=h+gap;
+  });
+  y=40;
+  outs.forEach((d,i)=>{
+    const x=W-260,w=240,cy=y+24;
+    let color="var(--accent)",title=TYPE_NAME[d.type],l1="",l2="";
+    if(d.type==="servo"){l1=`orange → GPIO ${d.pin} · red → 5 V`;l2=`brown → GND · open ${d.open??90}°, closed ${d.closed??0}°`}
+    if(d.type==="fan"){l1=`GPIO ${d.pin} → MOSFET gate (100 Ω)`;l2=`runs while gate is ${d.when||"open"}`}
+    if(d.type==="led"){color=LED_HEX[d.color]||color;title=`${(d.color||"green")[0].toUpperCase()+(d.color||"green").slice(1)} LED`;l1=`GPIO ${d.pin} → 220 Ω → LED long leg`;l2=`short leg → GND · lit while ${d.when||"open"}`}
+    if(d.type==="rgb"){title="Onboard RGB LED";l1="Built into the board, no wires";l2="green = open · red = closed"}
+    if(d.type==="stepper"){title="Stepper 28BYJ-48 · ULN2003";l1=`IN1–IN4 → GPIO ${devPins(d).join(", ")}`;l2=`+ → 5V pin · − → GND · opens ${d.deg??90}°`}
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="64" rx="6" fill="var(--surface)" stroke="${color}"/>`;
+    s+=`<circle cx="${x+16}" cy="${y+16}" r="5" fill="${d.type==="rgb"?"#22b35e":color}"/>${d.type==="rgb"?`<circle cx="${x+30}" cy="${y+16}" r="5" fill="#e5484d"/>`:""}`;
+    s+=`<text x="${x+(d.type==="rgb"?42:28)}" y="${y+20}" style="font-weight:500">${esc(title)}</text><text x="${x+12}" y="${y+38}" class="muted">${esc(l1)}</text><text x="${x+12}" y="${y+54}" class="muted">${esc(l2)}</text>`;
+    s+=`<path d="M${bx+bw} ${cy}H${x}" stroke="${color}" stroke-width="1.6" fill="none" ${d.type==="rgb"?'stroke-dasharray="3 4"':""}/>`;
+    s+=`<circle cx="${bx+bw}" cy="${cy}" r="4" fill="${color}"/><text x="${bx+bw-10}" y="${cy+4}" text-anchor="end">GPIO ${d.type==="stepper"?devPins(d).join("/"):d.pin}</text>`;
+    y+=64+gap;
+  });
+  s+=`</svg>`;
+  $("diagram").innerHTML=s;
+}
+
+// ---------- Claude desktop app bridge (local MCP server "frostgate") ----------
+const BRIDGE="host:frostgate";
+const BRIDGE_POLL_MS=3000;   // the Claude app limits how often a page may call programs on the computer
+let mcpApi=null;
+const BRIDGE_MSG={
+  server_not_connected:"Can't reach the FrostGate bridge. Open this artifact in the Claude desktop app, and check the bridge is set up (Wiring tab → Control the ESP32 from inside Claude).",
+  not_in_manifest:"Access to the bridge is turned off for this page. Turn it back on from the artifact's Permissions menu.",
+  cancelled:"Claude asked to confirm the command and it was declined, so nothing was sent.",
+  approval_required:"Claude needs your OK for this. Press the button again and allow it.",
+  not_granted:"This view can't reach apps on your computer. Open the artifact in the Claude desktop app.",
+  capability_disabled:"This view can't reach apps on your computer. Open the artifact in the Claude desktop app.",
+  server_unavailable:"The bridge didn't answer in time. Try again in a moment.",
+  rate_limited:"Claude is limiting how fast this page can talk to the ESP32. Wait a few seconds and try again."};
+function bridgeErr(e){
+  const code=e&&e.code;
+  if(code==="tool_error")return "Bridge: "+(e.message||"the ESP32 reported an error");
+  return BRIDGE_MSG[code]||`Couldn't reach the FrostGate bridge (${code||"unknown error"}).`;
+}
+async function bridgeConnect(quiet){
+  if(S.conn.type==="claude"){store.set("useBridge",false);await disconnect();return}
+  if(!mcpApi){if(!quiet)showLiveHint("Claude app control works when this page is open inside the Claude desktop app. In a normal browser tab, use Connect USB.");return}
+  if(S.conn.type)await disconnect();
+  try{
+    const r=await mcpApi.callTool(BRIDGE,"esp32_status",{},{cache:false});
+    S.conn.type="claude";store.set("useBridge",true);
+    S.conn.poll=setInterval(bridgePoll,BRIDGE_POLL_MS);
+    setSource("live");logEvt("Connected through the Claude app bridge","live");
+    bridgeApply(r.payload||{});
+    if(r.payload&&r.payload.connected){$("liveHint").hidden=true;send({cmd:"get_cfg"})}
+    else showLiveHint("The bridge is running but can't open the ESP32: "+((r.payload&&r.payload.error)||"plug it in")+" Close Arduino's Serial Monitor and any browser tab using the port, then press Reconnect on the Wiring tab.");
+  }catch(e){if(!quiet)showLiveHint(bridgeErr(e))}
+}
+let bridgeBusy=false,lastStateMs=null;
+async function bridgePoll(){
+  if(bridgeBusy||S.conn.type!=="claude"||Date.now()<(S.conn.pauseUntil||0))return;
+  bridgeBusy=true;
+  try{const r=await mcpApi.callTool(BRIDGE,"esp32_status",{},{cache:false});bridgeApply(r.payload||{});S.conn.fails=0}
+  catch(e){
+    if(e&&e.code==="rate_limited"){S.conn.pauseUntil=Date.now()+Math.max(5000,e.retryAfterMs||10000);return}   // back off quietly
+    S.conn.fails=(S.conn.fails||0)+1;
+    if(["server_not_connected","not_in_manifest","not_granted","capability_disabled"].includes(e.code)||S.conn.fails>8){await disconnect();showLiveHint(bridgeErr(e))}
+  }finally{bridgeBusy=false}
+}
+function bridgeApply(p){
+  const was=S.conn.bridge&&S.conn.bridge.connected;
+  S.conn.bridge=p;
+  if(p.cfg&&!S.conn.info)onLine(JSON.stringify(p.cfg));
+  if(p.state&&p.state.ms!==lastStateMs&&p.state_age_ms!=null&&p.state_age_ms<5000){lastStateMs=p.state.ms;onLine(JSON.stringify(p.state))}
+  if(was&&!p.connected)toast("The bridge lost the ESP32: "+(p.error||"unplugged?"));
+  if(!was&&p.connected&&S.conn.info===null)send({cmd:"get_cfg"});
+  setConn();
+}
+$("btnClaude").onclick=()=>bridgeConnect(false);
+$("bridgeReconnect").onclick=async()=>{
+  if(S.conn.type!=="claude"){await bridgeConnect(false);if(S.conn.type!=="claude")return}
+  const port=$("bridgePort").value.trim();store.set("bridgePort",port);
+  $("bridgePorts").textContent="Connecting…";
+  try{
+    const r=await mcpApi.callTool(BRIDGE,"esp32_connect",{port},{cache:false});const p=r.payload||{};
+    $("bridgePorts").textContent=(p.connected?`Connected on ${p.port}. `:`Not connected: ${p.error||"no ESP32 found"}. `)+"Ports on this computer: "+((p.ports||[]).map(x=>x.port+(x.chip?` (${x.chip})`:"")).join(", ")||"none");
+    if(p.connected){S.conn.info=null;send({cmd:"get_cfg"})}
+  }catch(e){$("bridgePorts").textContent=bridgeErr(e)}
+};
+const DEFAULT_BRIDGE_PATH="C:\\Users\\hayde\\Original Stuff\\Downloads\\FrostGate\\frostgate_bridge.py";
+function renderSnippet(){
+  const path=$("bridgePath").value.trim()||DEFAULT_BRIDGE_PATH;
+  $("bridgeSnippet").textContent=JSON.stringify({mcpServers:{frostgate:{command:"py",args:[path]}}},null,2);
+}
+$("bridgePath").value=store.get("bridgePath",DEFAULT_BRIDGE_PATH);$("bridgePort").value=store.get("bridgePort","");renderSnippet();
+$("bridgePath").addEventListener("input",()=>{store.set("bridgePath",$("bridgePath").value.trim());renderSnippet()});
+$("copySnippet").onclick=()=>{
+  const txt=$("bridgeSnippet").textContent;
+  const fallback=()=>{const rg=document.createRange();rg.selectNodeContents($("bridgeSnippet"));const sl=getSelection();sl.removeAllRanges();sl.addRange(rg);toast("Selected. Press Ctrl+C to copy.")};
+  try{navigator.clipboard.writeText(txt).then(()=>toast("Config copied"),fallback)}catch(e){fallback()}
+};
+((window.claude&&window.claude.use)?window.claude.use("mcp").catch(()=>null):Promise.resolve(null)).then(m=>{
+  mcpApi=m;
+  if(!m)return;
+  $("btnClaude").classList.add("primary");$("btnUsb").hidden=true;$("btnWifi").hidden=true;   // neither works inside Claude
+  if(!S.conn.type&&store.get("useBridge",true))bridgeConnect(true);   // connect automatically
+});
+
+// ======================================================================
+// Cutaway drawing of the cooler (Simulation + Dashboard)
+// ======================================================================
+const STANLEY_ML=1183;                       // 40 oz
+const REDUCED=(()=>{try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){return false}})();
+function iceState(absorbed,f=FUEL){
+  const m=f.mass,S=f.T0<f.Tm?m*f.cs*(f.Tm-f.T0):0,L=f.T0<=f.Tm?m*f.L:0;
+  if(absorbed<S)return {T:f.T0+absorbed/(m*f.cs),solid:1};
+  if(absorbed<S+L)return {T:f.Tm,solid:L?1-(absorbed-S)/L:0};
+  return {T:f.Tm+(absorbed-S-L)/(m*f.cl),solid:0};
+}
+function coolerModel(src){
+  const prof=CFG.profile||"";
+  if(src==="sim"){
+    const w=S.sim;if(!w)return null;
+    const ice=iceState(w.absorbed());
+    return {yeti:w.Ty,ice:ice.T,amb:w.amb,solid:ice.solid,gate:w.gate,lid:w.lid>0,leak:!!w.leak,
+      fuel:clamp(1-w.used/w.Etot,0,1),flowW:(w.gate?CFG.uaGo:CFG.uaGc)*Math.max(0,w.Ty-ice.T),
+      leakW:(w.lid>0?1.8:CFG.uaY*(w.leak?3:1))*Math.max(0,w.amb-w.Ty),prof,alarm:simAlarm(w.Ty)};
+  }
+  const r=S.latest.live,e=S.est.live;if(!r)return null;
+  const absorbed=e.Eused+fuelEnergy(FUEL,e.ambS??r.amb??22).chill,ice=iceState(absorbed);
+  const amb=r.amb??e.ambS??22,ty=r.yeti??amb,ti=r.ice??ice.T;
+  return {yeti:ty,ice:ti,amb,solid:e.depleted?0:ice.solid,gate:!!r.gate,flap:r.flap,lid:e.lastT-e.lastOpenAt<30,leak:e.leak,
+    fuel:e.frac,flowW:(r.gate?CFG.uaGo:CFG.uaGc)*Math.max(0,ty-ti),leakW:CFG.uaY*(e.leak?e.leakRatio||1:1)*Math.max(0,amb-ty),prof,alarm:r.alarm||null};
+}
+function simAlarm(t){return CFG.safeLo>-50&&t<CFG.safeLo?"cold":CFG.safeHi<50&&t>CFG.safeHi?"warm":null}
+const COOLER_FX=new Map();
+function hash2(i,j){const x=Math.sin(i*127.1+j*311.7)*43758.5453;return x-Math.floor(x)}
+function tempColor(t,a){
+  const stops=[[0,[70,140,255]],[4,[60,190,230]],[8,[90,200,150]],[14,[240,170,70]],[25,[235,100,60]]];
+  let c=stops[stops.length-1][1];
+  for(let k=0;k<stops.length-1;k++){const [t0,c0]=stops[k],[t1,c1]=stops[k+1];if(t<=t0){c=c0;break}if(t<=t1){const f=(t-t0)/(t1-t0);c=c0.map((v,i)=>Math.round(v+(c1[i]-v)*f));break}}
+  return `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+}
+function rrect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+function tag(g,x,y,text,color,align){
+  g.font="600 12px "+cssVar("--font");const w=g.measureText(text).width+14;
+  const bx=align==="right"?x-w:x;
+  g.fillStyle=cssVar("--surface");g.strokeStyle=color;g.lineWidth=1.5;rrect(g,bx,y-11,w,22,11);g.fill();g.stroke();
+  g.fillStyle=cssVar("--fg");g.textBaseline="middle";g.textAlign="left";g.fillText(text,bx+7,y+0.5);
+}
+function drawCooler(canvas,m,now){
+  const {g,w,h}=setupCanvas(canvas);
+  if(!m){g.fillStyle=cssVar("--muted");g.font="13px "+cssVar("--font");g.fillText("Waiting for data…",16,h/2);return}
+  let fx=COOLER_FX.get(canvas);if(!fx){fx={parts:[],last:now,flap:m.flap??(m.gate?1:0)};COOLER_FX.set(canvas,fx)}
+  const dt=Math.min(0.1,Math.max(0,(now-fx.last)/1000));fx.last=now;
+  const target=m.flap!=null?clamp(m.flap,0,1):(m.gate?1:0);
+  fx.flap+=clamp(target-fx.flap,-dt/1.5,dt/1.5);                  // ~1.5 s per 90°, like the real stepper
+  const VW=440,VH=600,sc=Math.min(w/VW,h/VH),ox=(w-VW*sc)/2,oy=(h-VH*sc)/2;
+  g.save();g.translate(ox,oy);g.scale(sc,sc);
+  const steelGrad=(x0,x1)=>{const gr=g.createLinearGradient(x0,0,x1,0);gr.addColorStop(0,"#7f8a96");gr.addColorStop(.35,"#dfe4ea");gr.addColorStop(.6,"#aab3bd");gr.addColorStop(1,"#6f7a86");return gr};
+  const cav=cssVar("--surface2"),muted=cssVar("--muted"),font=cssVar("--font");
+
+  // ---------- Stanley (upside down: its base at the top, neck pointing down at the gate)
+  const outer=()=>{g.beginPath();g.moveTo(130,52);g.arcTo(130,30,152,30,22);g.lineTo(288,30);g.arcTo(310,30,310,52,22);g.lineTo(310,330);g.quadraticCurveTo(310,352,268,368);g.lineTo(268,398);g.lineTo(172,398);g.lineTo(172,368);g.quadraticCurveTo(130,352,130,330);g.closePath()};
+  const inner=()=>{g.beginPath();g.moveTo(140,58);g.arcTo(140,40,158,40,16);g.lineTo(282,40);g.arcTo(300,40,300,58,16);g.lineTo(300,328);g.quadraticCurveTo(300,346,259,361);g.lineTo(259,396);g.lineTo(181,396);g.lineTo(181,361);g.quadraticCurveTo(140,346,140,328);g.closePath()};
+  // handle
+  g.strokeStyle=steelGrad(310,350);g.lineWidth=12;g.lineCap="round";g.beginPath();g.moveTo(310,95);g.bezierCurveTo(352,100,352,240,310,250);g.stroke();
+  outer();g.fillStyle=steelGrad(130,310);g.fill();
+  inner();g.fillStyle=cav;g.fill();
+  // contents of the bottle: meltwater sinks to the neck, ice sits on top of it
+  const top=40,bot=396,span=bot-top;
+  const fill0=clamp(FUEL.mass/(STANLEY_ML*0.917*0.62),0.12,0.97);
+  const waterH=fill0*(1-m.solid)*0.62*span, iceH=fill0*m.solid*span;
+  const waterTop=bot-waterH, iceTop=waterTop-iceH;
+  g.save();inner();g.clip();
+  if(m.ice<-2){g.fillStyle="rgba(235,248,255,0.18)";g.fillRect(130,30,180,370)}                // frost on the walls
+  if(waterH>0.5){
+    g.fillStyle="rgba(60,140,225,0.45)";g.beginPath();g.moveTo(130,bot+4);
+    for(let x=130;x<=310;x+=6)g.lineTo(x,waterTop+Math.sin(x/14+now/600)*1.6);
+    g.lineTo(310,bot+4);g.closePath();g.fill();
+  }
+  if(iceH>1){
+    const cs=24*(0.78+0.22*m.solid);
+    for(let row=0;;row++){
+      const y=waterTop-cs*0.9*(row+1);if(y<iceTop-cs*0.3)break;
+      for(let col=0;col<8;col++){
+        const x=142+col*cs*0.95+(row%2?cs*0.45:0)+hash2(row,col)*4-2;if(x>300-cs*0.5)continue;
+        g.save();g.translate(x+cs/2,y+cs/2);g.rotate((hash2(col,row)-.5)*0.5);
+        g.fillStyle="rgba(222,244,255,0.95)";g.strokeStyle="rgba(120,185,220,0.9)";g.lineWidth=1.2;rrect(g,-cs/2,-cs/2,cs,cs,5);g.fill();g.stroke();
+        g.fillStyle="rgba(255,255,255,0.8)";rrect(g,-cs/2+4,-cs/2+3,cs*0.35,cs*0.18,2);g.fill();
+        g.restore();
+      }
+    }
+  }
+  g.restore();
+  // ---------- gate collar, flap and stepper
+  g.fillStyle="#38414d";rrect(g,160,398,120,30,6);g.fill();
+  g.fillStyle="#11161d";g.fillRect(181,409,78,8);                                   // slot
+  const ang=fx.flap*75*Math.PI/180;
+  g.strokeStyle=cssVar("--accent");g.lineWidth=4;g.lineCap="round";g.beginPath();g.moveTo(183,413);g.lineTo(183+74*Math.cos(ang),413+74*Math.sin(ang));g.stroke();
+  g.fillStyle="#cfd6de";g.beginPath();g.arc(137,413,15,0,7);g.fill();             // 28BYJ-48 can
+  g.fillStyle="#3b6ce6";g.beginPath();g.arc(137,413,9,0,7);g.fill();
+  const sa=-fx.flap*Math.PI/2*(CFG.devices.find(d=>d.type==="stepper")?.rev?-1:1)-Math.PI/2;
+  g.strokeStyle="#fff";g.lineWidth=3;g.beginPath();g.moveTo(137,413);g.lineTo(137+8*Math.cos(sa),413+8*Math.sin(sa));g.stroke();
+  g.strokeStyle="#cfd6de";g.lineWidth=3;g.beginPath();g.moveTo(152,413);g.lineTo(162,413);g.stroke();
+  g.fillStyle=muted;g.font="11px "+font;g.textAlign="center";g.textBaseline="bottom";g.fillText("stepper",137,395);
+  // ---------- Yeti
+  const lidLift=m.lid?16:0,lidTilt=m.lid?-0.12:m.leak?-0.035:0;
+  g.save();g.translate(140,436+0);g.rotate(lidTilt);g.translate(0,-lidLift);g.fillStyle="#2b313a";rrect(g,0,-8,160,18,5);g.fill();g.restore();
+  g.beginPath();g.moveTo(120,446);g.lineTo(320,446);g.lineTo(320,560);g.arcTo(320,588,292,588,28);g.lineTo(148,588);g.arcTo(120,588,120,560,28);g.closePath();g.fillStyle=steelGrad(120,320);g.fill();
+  g.beginPath();g.moveTo(130,452);g.lineTo(310,452);g.lineTo(310,556);g.arcTo(310,578,288,578,22);g.lineTo(152,578);g.arcTo(130,578,130,556,22);g.closePath();
+  g.fillStyle=cav;g.fill();g.fillStyle=tempColor(m.yeti,0.32);g.fill();
+  if(m.alarm){g.strokeStyle=m.alarm==="cold"?"#3b6ce6":"#ee8722";g.lineWidth=3;g.setLineDash([6,5]);g.stroke();g.setLineDash([])}
+  // medicine vial
+  g.fillStyle="rgba(196,118,36,0.92)";rrect(g,203,505,34,52,6);g.fill();
+  g.fillStyle="#f4f4f4";rrect(g,201,495,38,14,4);g.fill();
+  g.fillStyle="rgba(255,255,255,0.85)";g.fillRect(207,522,26,14);
+  g.fillStyle=cssVar("--fg");g.font="600 11px "+font;g.textAlign="center";g.textBaseline="top";
+  const label=(m.prof||"Your items");g.fillText(label.length>26?label.slice(0,25)+"…":label,220,560);
+  // ---------- moving air
+  const P=fx.parts;
+  if(!REDUCED){
+    const spawn=(n,f)=>{let k=n*dt;while(k>0){if(Math.random()<k)P.push(f());k-=1}};
+    if(fx.flap>0.25)spawn(55*fx.flap,()=>({x:186+Math.random()*68,y:418,vx:(Math.random()-.5)*14,vy:28+Math.random()*30,life:3.2,kind:"cold"}));
+    const leakRate=Math.min(30,(m.leakW||0)*6);
+    spawn(leakRate*0.5,()=>{const side=Math.random()<.5;return {x:side?118:322,y:470+Math.random()*100,vx:side?14:-14,vy:(Math.random()-.5)*6,life:1.2,kind:"warm"}});
+    if(m.lid||m.leak)spawn(m.lid?40:12,()=>({x:290+Math.random()*24,y:442,vx:-12-Math.random()*10,vy:18+Math.random()*16,life:2,kind:"warm"}));
+  }
+  for(let k=P.length-1;k>=0;k--){const p=P[k];p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;if(p.kind==="cold"){p.vx*=0.98;if(p.y>560){p.vy*=0.2;p.vx+=(Math.random()-.5)*20*dt}}
+    if(p.life<=0||P.length>420){P.splice(k,1);continue}
+    g.fillStyle=p.kind==="cold"?`rgba(80,165,255,${Math.min(0.75,p.life/2)})`:`rgba(240,140,60,${Math.min(0.7,p.life)})`;
+    g.beginPath();g.arc(p.x,p.y,p.kind==="cold"?2.6:2.1,0,7);g.fill()}
+  // ---------- labels
+  tag(g,8,90,`Ice ${fT(m.ice)} °C`,"#3cc0e6");
+  tag(g,8,122,`${Math.round(m.solid*100)}% still frozen`,"#3cc0e6");
+  if(waterH>0.5)tag(g,8,154,`Meltwater ${Math.round(FUEL.mass*(1-m.solid))} mL`,"#3c8ce6");
+  tag(g,432,22,`Room ${fT(m.amb)} °C`,"#a888f3","right");
+  tag(g,432,476,`Yeti ${fT(m.yeti)} °C`,m.alarm?(m.alarm==="cold"?"#3b6ce6":"#ee8722"):"#ee8722","right");
+  if(CFG.safeLo>-50)tag(g,432,508,`safe ${CFG.safeLo}–${CFG.safeHi} °C`,"#3cc47c","right");
+  tag(g,432,413,fx.flap>0.05?`Gate ${Math.round(fx.flap*90)}° open`:"Gate closed",cssVar("--accent"),"right");
+  if(m.lid)tag(g,8,440,"Lid open",  "#ee8722");else if(m.leak)tag(g,8,440,"Lid not sealed","#de3d43");
+  g.restore();
+}
+function renderCoolers(now){
+  if(S.view==="sim"){
+    const m=coolerModel("sim");drawCooler($("coolerSim"),m,now);
+    if(m){$("csSolid").textContent=Math.round(m.solid*100)+"%";$("csMelt").textContent=Math.round(FUEL.mass*(1-m.solid))+" mL";
+      $("csFlow").textContent=fW(m.gate?m.flowW:0);$("csLeak").textContent=fW(m.leakW);
+      $("csLid").textContent=m.lid?"Open":m.leak?"Not sealed":"Closed";$("csFuel").textContent=Math.round(m.fuel*100)+"%"}
+  }else if(S.view==="dash"||!S.view){drawCooler($("coolerDash"),coolerModel(S.source),now)}
+}
+
+// ======================================================================
+// AI tab: medicines, coolants, plan, library on the ESP32, lid watch
+// ======================================================================
+const PLAN=Object.assign({medId:null,days:5,opens:4,openSec:20,amb:22,form:"cubes",start:"cold",refill:true,band:null},store.get("plan",{}));
+const LIB=Object.assign({meds:[],packs:[]},store.get("lib",{}));
+const MAX_MEDS=15,MAX_PACKS=10;
+const ICE_FIT={cubes:600,crushed:670,block:1060};
+const opensUA=()=>1.8*(+PLAN.opens||0)*(+PLAN.openSec||0)/86400;   // average extra leak from planned lid openings
+const uid=()=>Math.random().toString(36).slice(2,8);
+const saveLibLocal=()=>store.set("lib",LIB);
+const savePlanLocal=()=>store.set("plan",PLAN);
+
+// ---------- talking to Claude (artifact "sample", or an API key in the downloaded copy)
+async function claudeAsk(prompt,{json=false,image=null,signal=null,onText=null}={}){
+  const sample=await samplePromise;
+  if(sample){
+    const opts={signal,modelTier:"default"};
+    if(onText)opts.onText=onText;
+    if(!json)opts.cache=false;
+    if(image){const lim=await sample.limits().catch(()=>null);if(lim&&lim.images)opts.images=[image];else throw {code:"images_unavailable"}}
+    if(json)return await sample.json(prompt,opts);
+    return (await sample(prompt,opts)).text;
+  }
+  const text=await directAsk(prompt,image,signal);
+  if(onText)onText({text,delta:text});
+  return json?parseJSONLoose(text):text;
+}
+function aiError(e){
+  const c=e&&e.code;
+  return c==="cancelled"?"Stopped.":c==="not_granted"?"Claude access wasn't allowed for this page.":c==="images_unavailable"?"Photos can't be sent from this view. Type the name instead.":
+    c==="rate_limited"?"Too many requests right now. Try again in a minute.":c==="invalid_json"?"The answer couldn't be read. Try again with a clearer photo or name.":
+    c==="refused"?"Claude declined that request. Try describing it differently.":(e&&e.message)||"Something went wrong. Try again.";
+}
+function dropZone(dropId,fileId,onFile){
+  const dz=$(dropId);
+  const set=f=>{if(!f||!/^image\//.test(f.type)){toast("Pick a JPEG, PNG or WebP photo");return}
+    onFile(f);dz.textContent="";const img=document.createElement("img");img.alt="Selected photo";img.src=URL.createObjectURL(f);const s=document.createElement("span");s.textContent=f.name+" · tap to change";dz.append(img,s)};
+  $(fileId).onchange=e=>set(e.target.files[0]);
+  dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("over")});
+  dz.addEventListener("dragleave",()=>dz.classList.remove("over"));
+  dz.addEventListener("drop",e=>{e.preventDefault();dz.classList.remove("over");if(e.dataTransfer.files[0])set(e.dataTransfer.files[0])});
+}
+const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n};
+function kvBox(rows){const kv=el("div","kv");kv.style.margin="12px 0";for(const [k,v] of rows){kv.append(el("span",null,k),el("b",null,v))}return kv}
+
+// ---------- medicine lookup
+let medFile=null,medCtl=null;
+dropZone("medDrop","medFile",f=>medFile=f);
+const MED_PROMPT=desc=>`You help someone keep a medicine safe in a small passive ice cooler (it can hold roughly 3-10 °C, not freezer temperatures).
+Identify the medicine in the photo and/or description, and give its storage temperature requirements as stated in the manufacturer's labeling, as best you know them.
+Description from the user: ${desc||"(none)"}
+Reply with only one JSON object, no other text:
+{"is_medicine": boolean,
+ "name": brand and generic name if known,
+ "form": e.g. "insulin pen", "vial", "tablets",
+ "store_min_c": number (lowest allowed storage temperature),
+ "store_max_c": number (highest allowed storage temperature),
+ "ideal_c": number,
+ "must_not_freeze": boolean,
+ "needs_cooling": boolean (false if it is labeled for room-temperature storage),
+ "room_temp_rule": short string or null (for example "In-use pen: up to 28 days below 30 °C"),
+ "confidence": "low" | "medium" | "high",
+ "notes": one or two short sentences, including anything the user should confirm on the label}
+If you can't identify the exact product, give typical values for that kind of product and set confidence to "low". Do not give dosing advice.
+Example: {"is_medicine":true,"name":"Humalog (insulin lispro)","form":"insulin pen","store_min_c":2,"store_max_c":8,"ideal_c":5,"must_not_freeze":true,"needs_cooling":true,"room_temp_rule":"In-use pen: up to 28 days below 30 °C","confidence":"high","notes":"Unopened pens go in the fridge. Discard if frozen."}`;
+$("medGo").onclick=async()=>{
+  const desc=$("medDesc").value.trim();
+  if(!desc&&!medFile){toast("Add a photo or the medicine's name first");return}
+  const out=$("medOut");out.innerHTML="<p class='note'>Looking it up… this usually takes 10–40 seconds.</p>";
+  $("medGo").disabled=true;$("medStop").hidden=false;medCtl=new AbortController();
+  try{showMed(await claudeAsk(MED_PROMPT(desc),{json:true,image:medFile,signal:medCtl.signal}))}
+  catch(e){out.innerHTML="";out.append(el("p","note",aiError(e)))}
+  finally{$("medGo").disabled=false;$("medStop").hidden=true}
+};
+$("medStop").onclick=()=>medCtl&&medCtl.abort();
+function showMed(d){
+  const n=v=>typeof v==="number"&&isFinite(v)?v:null;
+  const out=$("medOut");out.innerHTML="";
+  const min=n(d.store_min_c),max=n(d.store_max_c);
+  out.append(el("h2",null,d.name||"Unknown medicine"));
+  const chip=el("span","chip "+(d.confidence==="high"?"ok":d.confidence==="low"?"warn":"cold"),(d.confidence||"unknown")+" confidence");out.append(chip);
+  out.append(kvBox([["Store between",min!=null&&max!=null?`${min} – ${max} °C`:"–"],["Ideal",n(d.ideal_c)!=null?d.ideal_c+" °C":"–"],
+    ["Freezing",d.must_not_freeze?"Must not freeze":"Not stated as harmful"],["Form",d.form||"–"],["Out of the fridge",d.room_temp_rule||"–"]]));
+  if(d.notes)out.append(el("p","note",d.notes));
+  if(d.is_medicine===false)out.append(el("div","callout warn","This doesn't look like a medicine. Check the photo or type the name."));
+  if(d.needs_cooling===false)out.append(el("div","callout","This is labeled for room-temperature storage, so it doesn't need the cooler unless it's very hot out."));
+  out.append(el("p","note","Always confirm storage temperatures with the package insert or a pharmacist."));
+  if(min==null||max==null||min>=max){out.append(el("p","note","No usable temperature range came back, so it can't be saved."));return}
+  const med={id:uid(),name:String(d.name||"Medicine").slice(0,48),min,max,ideal:n(d.ideal_c)??+((min+max)/2).toFixed(1),noFreeze:!!d.must_not_freeze,note:String(d.room_temp_rule||d.notes||"").slice(0,90)};
+  const row=el("div","row");row.style.marginTop="10px";
+  const b1=el("button","btn","Save to library");b1.type="button";b1.onclick=()=>{addMed(med);b1.disabled=true};
+  const b2=el("button","btn primary","Plan for this medicine");b2.type="button";b2.onclick=()=>{addMed(med);PLAN.medId=med.id;fillPlan();$("pDays").focus();$("pDays").scrollIntoView({behavior:"smooth",block:"center"})};
+  row.append(b1,b2);out.append(row);
+}
+function addMed(med){
+  if(LIB.meds.some(x=>x.name.toLowerCase()===med.name.toLowerCase())){toast(med.name+" is already in the library");return}
+  if(LIB.meds.length>=MAX_MEDS){toast(`The library holds ${MAX_MEDS} medicines. Delete one first.`);return}
+  LIB.meds.push(Object.assign({esp:false},med));saveLibLocal();renderLib();fillPlan();pushLib("meds");
+}
+function addPack(p){
+  if(LIB.packs.some(x=>x.name.toLowerCase()===p.name.toLowerCase())){toast(p.name+" is already in the library");return}
+  if(LIB.packs.length>=MAX_PACKS){toast(`The library holds ${MAX_PACKS} coolants. Delete one first.`);return}
+  LIB.packs.push(Object.assign({esp:false},p));saveLibLocal();renderLib();pushLib("packs");
+}
+
+// ---------- library <-> ESP32 flash
+const stripLib=k=>LIB[k].map(({esp,...x})=>x);
+async function pushLib(k){
+  if(!S.conn.type){renderLib();return}
+  await send({cmd:"kv_set",key:k,data:stripLib(k)});
+}
+async function pushPlan(){if(S.conn.type)await send({cmd:"kv_set",key:"plan",data:{medId:PLAN.medId,days:+PLAN.days,opens:+PLAN.opens,openSec:+PLAN.openSec,amb:+PLAN.amb,form:PLAN.form,start:PLAN.start,refill:!!PLAN.refill,band:PLAN.band}})}
+function loadKv(){for(const k of ["meds","packs","plan"])send({cmd:"kv_get",key:k})}
+function handleKv(m){
+  if(m.key==="plan"){if(m.data&&typeof m.data==="object"){Object.assign(PLAN,m.data);savePlanLocal();fillPlan()}else if(PLAN.band)pushPlan();return}
+  if(m.key!=="meds"&&m.key!=="packs")return;
+  const k=m.key,onBoard=Array.isArray(m.data)?m.data:[];
+  if(m.saved){LIB[k]=onBoard.map(x=>Object.assign({},x,{esp:true}));saveLibLocal();renderLib();fillPlan();toast((k==="meds"?"Medicines":"Coolants")+" saved on the ESP32");return}
+  const names=new Set(onBoard.map(x=>String(x.name).toLowerCase()));
+  const localOnly=LIB[k].filter(x=>!names.has(String(x.name).toLowerCase()));
+  LIB[k]=onBoard.map(x=>Object.assign({},x,{esp:true})).concat(localOnly.map(x=>Object.assign(x,{esp:false})));
+  saveLibLocal();renderLib();fillPlan();
+  if(localOnly.length)pushLib(k);
+}
+$("libSync").onclick=()=>{if(!S.conn.type){toast(mcpApi?"Connect first: press Claude app at the top.":"Connect the ESP32 first.");return}loadKv();toast("Syncing with the ESP32…")};
+function renderLib(){
+  const conn=!!S.conn.type,allOn=[...LIB.meds,...LIB.packs].every(x=>x.esp);
+  const chip=$("libChip");chip.textContent=!conn?"Browser only · not connected":allOn?"Saved on ESP32":"Some items not on ESP32 yet";chip.className="chip "+(!conn?"":allOn?"ok":"warn");
+  const row=(x,meta,useFn,delFn)=>{
+    const r=el("div","lib-row");const t=el("div");t.append(el("b",null,x.name),el("span","note",meta));
+    const badge=el("span","chip "+(x.esp?"ok":""),x.esp?"ESP32":"browser");
+    const use=el("button","btn small","Use");use.type="button";use.onclick=useFn;
+    const del=el("button","btn small","Delete");del.type="button";
+    del.onclick=()=>{if(del.dataset.armed){delFn();return}del.dataset.armed="1";del.textContent="Confirm";setTimeout(()=>{del.textContent="Delete";delete del.dataset.armed},3000)};
+    r.append(t,badge,use,del);return r;
+  };
+  const meds=$("libMeds");meds.textContent="";
+  if(!LIB.meds.length)meds.append(el("p","note","None yet. Look one up above."));
+  for(const x of LIB.meds)meds.append(row(x,`${x.min}–${x.max} °C${x.noFreeze?" · don't freeze":""}${x.id===PLAN.medId?" · selected":""}`,
+    ()=>{PLAN.medId=x.id;fillPlan();$("planGo").scrollIntoView({behavior:"smooth",block:"center"});toast("Selected "+x.name+". Press Make a plan.")},
+    ()=>{LIB.meds=LIB.meds.filter(y=>y!==x);if(PLAN.medId===x.id)PLAN.medId=null;saveLibLocal();renderLib();fillPlan();pushLib("meds")}));
+  const packs=$("libPacks");packs.textContent="";
+  if(!LIB.packs.length)packs.append(el("p","note","None yet. Estimate a coolant above."));
+  for(const x of LIB.packs)packs.append(row(x,`melts at ${x.Tm} °C · ${x.L} J/g`,
+    ()=>{$("fMat").value="custom";$("fTm").value=x.Tm;$("fL").value=x.L;$("fCs").value=x.cs;$("fCl").value=x.cl;if(x.T0!=null)$("fT0").value=x.T0;FUEL.aiName=x.name;renderFuelTable();setView("fuel");toast("Check the mass, then press Load.")},
+    ()=>{LIB.packs=LIB.packs.filter(y=>y!==x);saveLibLocal();renderLib();pushLib("packs")}));
+}
+
+// ---------- plan
+function fillPlan(){
+  const sel=$("pMed");sel.textContent="";
+  const none=el("option",null,LIB.meds.length?"Choose a saved medicine":"Look up a medicine first");none.value="";sel.append(none);
+  for(const x of LIB.meds){const o=el("option",null,`${x.name} (${x.min}–${x.max} °C)`);o.value=x.id;sel.append(o)}
+  sel.value=LIB.meds.some(x=>x.id===PLAN.medId)?PLAN.medId:"";
+  $("pDays").value=PLAN.days;$("pOpens").value=PLAN.opens;$("pOpenSec").value=PLAN.openSec;$("pAmb").value=PLAN.amb;$("pForm").value=PLAN.form;$("pStart").value=PLAN.start;$("pRefill").checked=!!PLAN.refill;
+  $("lidPlan").textContent=`${PLAN.opens} × ${PLAN.openSec} s`;
+}
+function readPlan(){
+  PLAN.medId=$("pMed").value||null;PLAN.days=Math.max(0.25,+$("pDays").value||1);PLAN.opens=Math.max(0,Math.round(+$("pOpens").value||0));
+  PLAN.openSec=Math.max(1,+$("pOpenSec").value||20);PLAN.amb=+$("pAmb").value||22;PLAN.form=$("pForm").value;PLAN.start=$("pStart").value;PLAN.refill=$("pRefill").checked;
+  savePlanLocal();$("lidPlan").textContent=`${PLAN.opens} × ${PLAN.openSec} s`;
+}
+["pMed","pDays","pOpens","pOpenSec","pAmb","pForm","pStart","pRefill"].forEach(id=>$(id).addEventListener("change",readPlan));
+function chooseBand(min,max,Tm){
+  const floor=Math.max(min+1,Tm+1.5);   // stay 1 °C above the low limit and 1.5 °C above the ice
+  const ceil=max-1.2;                   // room for lid openings and overshoot
+  if(ceil-floor<0.4)return {ok:false,floor,ceil};
+  const hys=Math.min(2,ceil-floor);     // as warm as safely possible = least ice spent
+  return {ok:true,hi:+ceil.toFixed(1),lo:+(ceil-hys).toFixed(1)};
+}
+function simulateLife(fuel,band,amb,startT,opens,openSec){
+  const saved=FUEL;FUEL=Object.assign({},fuel);
+  try{
+    const w=new World({amb,Ty:startT,noise:0});w.hi=band.hi;w.lo=band.lo;w.extraUA=1.8*opens*openSec/86400;
+    const dt=10,maxS=21*86400;let t=0,minT=99,maxT=-99;
+    while(t<maxS&&!w.empty()){w.step(dt);t+=dt;if(t>3*3600){minT=Math.min(minT,w.Ty);maxT=Math.max(maxT,w.Ty)}}
+    return {sec:t,minT,maxT,capped:t>=maxS};
+  }finally{FUEL=saved}
+}
+let lastPlan=null;
+$("planGo").onclick=()=>{
+  readPlan();
+  const med=LIB.meds.find(x=>x.id===PLAN.medId);
+  const out=$("planOut");out.textContent="";$("planAdvice").hidden=true;$("planApply").disabled=true;$("planAsk").disabled=true;
+  if(!med){out.append(el("div","callout warn","Choose a medicine first. Look one up above, or pick one from the library."));return}
+  const band=chooseBand(med.min,med.max,FUEL.Tm);
+  const chip=$("planChip");
+  if(!band.ok){
+    chip.textContent="Not possible with this coolant";chip.className="chip bad";
+    out.append(el("div","callout bad",med.max<=FUEL.Tm+2.5
+      ?`${med.name} has to stay at or below ${med.max} °C, but ${FUEL.label||"this coolant"} sits at ${FUEL.Tm} °C while it melts, so it can't pull the cooler that low. You'd need a colder coolant, like salt-water ice (−6 °C) or a −21 °C eutectic pack. Never seal dry ice in a bottle.`
+      :`The safe range for ${med.name} (${med.min}–${med.max} °C) is too narrow to hold with an on/off gate. Ask a pharmacist whether a wider range is acceptable.`));
+    lastPlan=null;return;
+  }
+  const need=PLAN.days*86400,startT=PLAN.start==="room"?PLAN.amb:band.hi;
+  const fit=ICE_FIT[PLAN.form],curMass=Math.min(FUEL.mass,fit);
+  const now=simulateLife(Object.assign({},FUEL,{mass:curMass}),band,PLAN.amb,startT,PLAN.opens,PLAN.openSec);
+  const full=simulateLife(Object.assign({},FUEL,{mass:fit}),band,PLAN.amb,band.hi,PLAN.opens,PLAN.openSec);   // later fills start cold
+  const Cy=yetiC().total,openRise=1.8*PLAN.openSec*Math.max(0,PLAN.amb-band.hi)/Cy;
+  const fills=now.sec>=need?1:1+Math.ceil((need-now.sec)/(full.sec*0.85));
+  const iceForAll=Math.round(fit*need/Math.max(1,full.sec));
+  let verdict,cls;
+  if(now.sec>=need){verdict="Lasts the whole time";cls="ok"}
+  else if(PLAN.refill){verdict=`Needs ${fills-1} refill${fills-1===1?"":"s"}`;cls="warn"}
+  else{verdict="Won't last without refills";cls="bad"}
+  chip.textContent=verdict;chip.className="chip "+cls;
+  const warn=[];
+  if(band.hi+openRise>med.max)warn.push(`Each ${PLAN.openSec}-second opening warms the Yeti about ${openRise.toFixed(1)} °C, which can push it past ${med.max} °C. Keep openings shorter.`);
+  if(med.noFreeze&&band.lo-FUEL.Tm<2.5)warn.push("The cooler runs close to the ice temperature. Keep the medicine off the bottom, away from the cold-air inlet.");
+  if(PLAN.amb-band.hi<2)warn.push(`At ${PLAN.amb} °C room temperature the cooler barely has to work.`);
+  if(!PLAN.refill&&now.sec<need)warn.push(`To last ${PLAN.days} days with no refills you'd need about ${(iceForAll/1000).toFixed(1)} kg of ice. The 40 oz Stanley holds about 1.06 kg at most (frozen solid), so this needs refills, a bigger ice bottle, or better insulation.`);
+  if(now.capped)warn.push("Lasts more than 3 weeks in this model; real life will be shorter.");
+  const g=el("div","plan-grid");
+  const stat=(k,v,sub)=>{const d=el("div","plan-stat");d.append(el("span",null,k),el("b",null,v));if(sub)d.append(el("small",null,sub));return d};
+  g.append(stat("Gate opens above",`${band.hi} °C`,`closes below ${band.lo} °C`),
+    stat("Safe range",`${med.min}–${med.max} °C`,med.noFreeze?"must not freeze":""),
+    stat("This fill lasts",fDur(now.sec),`${Math.round(curMass)} g ${PLAN.form==="block"?"frozen block":PLAN.form}`),
+    stat("Goal",`${PLAN.days} day${PLAN.days===1?"":"s"}`,fills>1?`refill every ~${fDur(full.sec*0.85)}`:"no refill needed"),
+    stat("Each opening",`+${openRise.toFixed(1)} °C`,`${PLAN.opens}× a day`),
+    stat("Coldest / warmest",now.minT<99?`${now.minT.toFixed(1)} / ${now.maxT.toFixed(1)} °C`:"–","after settling, before openings"));
+  out.append(g);
+  for(const w of warn)out.append(el("div","callout warn",w));
+  if(FUEL.mass>fit)out.append(el("p","note",`Your loaded fuel is ${Math.round(FUEL.mass)} g, but only about ${fit} g of ${PLAN.form} fits in the Stanley, so the plan uses ${fit} g.`));
+  PLAN.band={hi:band.hi,lo:band.lo};savePlanLocal();
+  lastPlan={med,band,now,full,fills,need,openRise,iceForAll,fit,curMass,warn};
+  $("planApply").disabled=false;$("planAsk").disabled=false;
+};
+$("planApply").onclick=async()=>{
+  if(!lastPlan)return;
+  const {med,band}=lastPlan;
+  CFG.hi=band.hi;CFG.lo=band.lo;CFG.safeLo=med.min;CFG.safeHi=med.max;CFG.profile=med.name.slice(0,48);saveCfg();
+  logEvt(`Settings for ${med.name}: open above ${band.hi} °C, close below ${band.lo} °C, safe ${med.min}–${med.max} °C`,"live");
+  if(!S.conn.type){toast("Saved in this browser. Connect the ESP32 to store it on the board.");return}
+  await send({cmd:"set_cfg",cfg:cfgPayload()});await pushPlan();
+  if(!med.esp)pushLib("meds");
+};
+let planCtl=null;
+$("planAsk").onclick=async()=>{
+  if(!lastPlan)return;
+  const p=lastPlan,box=$("planAdvice");box.hidden=false;box.textContent="Thinking… this usually takes 10–40 seconds.";
+  $("planAsk").disabled=true;$("planStop").hidden=false;planCtl=new AbortController();
+  const prompt=`You're advising someone using FrostGate: a 40 oz Stanley bottle of ice turned upside down over a 24 oz YETI food jar, with a stepper-driven flap between them. Cold air sinks into the Yeti when the flap opens. An ESP32 opens the flap above ${p.band.hi} °C and closes it below ${p.band.lo} °C.
+What they're protecting: ${p.med.name}, safe storage ${p.med.min}–${p.med.max} °C${p.med.noFreeze?", must not freeze":""}. ${p.med.note?"Label note: "+p.med.note:""}
+Goal: ${PLAN.days} days. Room temperature about ${PLAN.amb} °C. Lid opened about ${PLAN.opens} times a day for ${PLAN.openSec} s. Refilling ice is ${PLAN.refill?"possible":"not possible"}. Item starts ${PLAN.start==="room"?"at room temperature":"already cold"}.
+Coolant: ${FUEL.label||"water ice"}, melts at ${FUEL.Tm} °C. Ice that fits: about ${p.fit} g (${PLAN.form}).
+Physics model results: this fill lasts ${fDur(p.now.sec)}; a full bottle lasts ${fDur(p.full.sec)}; fills needed for the goal: ${p.fills}; each opening warms the Yeti about ${p.openRise.toFixed(1)} °C; ice needed for the whole goal without refills: about ${(p.iceForAll/1000).toFixed(1)} kg.
+${p.warn.length?"Warnings: "+p.warn.join(" "):""}
+Write the best practical method in plain English for an engineering student: up to 6 short lines, each starting with "- ". Cover ice prep (form, pre-freezing, pre-chilling the bottle and jar), a refill schedule if needed, where to place the medicine, and opening habits. If the goal can't be met, say so plainly and give the most effective fix. End with one line reminding them to confirm storage limits on the label. No markdown other than the dashes.`;
+  try{await claudeAsk(prompt,{signal:planCtl.signal,onText:({text})=>{box.textContent=text}})}
+  catch(e){box.textContent=(e&&e.text)||aiError(e)}
+  finally{$("planAsk").disabled=false;$("planStop").hidden=true}
+};
+$("planStop").onclick=()=>planCtl&&planCtl.abort();
+
+// ---------- lid watch (both sources; shows the one on screen)
+function renderLidWatch(){
+  const e=S.est[S.source];
+  const chip=$("lidChip"),recent=e.lastT-e.lastOpenAt<60;
+  chip.textContent=e.leak?"Lid may not be sealed":recent?"Opening detected":"Sealed";chip.className="chip "+(e.leak?"bad":recent?"warn":"ok");
+  $("lidOpens").textContent=e.opens.length;
+  const span=Math.min(86400,e.lastT-(e.firstT??e.lastT));
+  const n24=e.opens.filter(t=>e.lastT-t<86400).length;
+  $("lidRate").textContent=span>7200?(n24*86400/span).toFixed(1)+" per day":"needs 2 h of data";
+  const r=e.leakRatio;$("lidRatio").textContent=r==null?"– (needs a few minutes of data)":r.toFixed(1)+"×";
+  $("lidBar").style.width=r==null?"0%":clamp(r/2.2*100,0,100)+"%";$("lidBar").className=r!=null&&r>2.2?"bad":r!=null&&r>1.5?"warn":"";
+  $("lidNote").textContent=S.source==="sim"?"Showing the simulation. Tick \"Leave the lid slightly open\" on the Simulation tab to see the alert.":"Showing the live cooler. Alerts also appear on the Dashboard.";
+}
+
+// ---------- real gate follows the simulation ----------
+const DRIVE={on:false,sent:null,lastChange:0,lastSend:0};
+function stepperDeg(){const st=CFG.devices.find(d=>d.type==="stepper");return st?(st.deg??90):90}
+function renderDrive(){
+  $("driveChip").hidden=!DRIVE.on;$("simDrive").checked=DRIVE.on;
+  const w=S.sim,deg=stepperDeg();
+  $("simGateV").textContent=w?(w.gate?`Open · ${deg}°`:"Closed · 0°"):"–";
+  const r=S.latest.live;
+  $("simGateR").textContent=!S.conn.type?"not connected":!r?"waiting…":(r.moving?"moving… ":"")+(r.flap!=null?`${Math.round(clamp(r.flap,0,1)*deg)}°`:(r.gate?"open":"closed"))+(r.mode==="sim"?" · following":" · own thermostat");
+}
+$("simDrive").onchange=e=>{
+  if(e.target.checked){
+    if(!S.conn.type){e.target.checked=false;toast(mcpApi?"Connect the ESP32 first: press Claude app at the top.":"Connect the ESP32 first: press Connect USB at the top.");return}
+    DRIVE.on=true;DRIVE.sent=null;DRIVE.lastChange=0;
+    if(!S.simRun){S.simRun=true;updSimBtn()}
+    if(S.simSpeed>600)toast("Tip: at 600× or slower the stepper has time to finish each move.");
+    logEvt("Real gate now follows the simulation","sim");
+  }else{
+    DRIVE.on=false;send({cmd:"gate",mode:"auto"});logEvt("Real gate back on its own thermostat","sim");
+  }
+  renderDrive();
+};
+function driveTick(){
+  renderDrive();
+  if(!DRIVE.on||!S.sim)return;
+  if(!S.conn.type){DRIVE.on=false;renderDrive();toast("ESP32 disconnected. The real gate is back on its own thermostat.");return}
+  const want=!!S.sim.gate,now=Date.now();
+  if(want!==DRIVE.sent){
+    if(now-DRIVE.lastChange<4000)return;          // let the stepper finish a move before reversing
+    DRIVE.sent=want;DRIVE.lastChange=DRIVE.lastSend=now;send({cmd:"remote",open:want});return;
+  }
+  if(S.conn.type!=="claude"&&now-DRIVE.lastSend>5000){DRIVE.lastSend=now;send({cmd:"remote",open:want})}   // keep-alive (the Claude bridge does its own)
+}
+setInterval(driveTick,250);
+
+// ======================================================================
+// Boot
+// ======================================================================
+function renderAll(){
+  if(S.view==="dash"||!S.view)renderDash();
+  if(S.view==="sim")renderSim();
+  if(S.view==="ai")renderLidWatch();
+  if(S.view==="ai"&&renderAll.conn!==S.conn.type){renderAll.conn=S.conn.type;renderLib()}
+}
+fillSetup();fillFuel();renderWiring();fillPlan();renderLib();
+S.est.live.reset(fuelEnergy().total);restoreLive();
+simNew();renderLog();
+const startView=(location.hash||"").slice(1)||store.get("view","dash");
+setView(VIEWS.includes(startView)?startView:"dash");
+setConn();updSimBtn();
+// first look: if no ESP32 is connected yet, show the demo running
+setSource("sim");S.simRun=true;updSimBtn();
+for(let i=0;i<1800;i++){S.sim.step(1);if(i%5===0)ingest("sim",S.sim.read(),S.sim.t,5)}
+runForecasts();renderAll();
+requestAnimationFrame(frame);
+setInterval(()=>{renderAll()},300);
+setInterval(runForecasts,2000);
+setInterval(()=>{if(S.conn.type&&S.conn.lastMsg&&Date.now()-S.conn.lastMsg>8000){$("connChip").className="chip warn"}},2000);
+window.addEventListener("resize",()=>renderAll());
+</script>
+<style id="coldchain-theme">:root{color-scheme:dark!important;--bg:#07111f!important;--surface:#0b1a29!important;--surface2:#102337!important;--fg:#eaf3ff!important;--muted:#93abc0!important;--line:#21394d!important;--side:#07111f!important;--side2:#16344a!important;--side-fg:#b8d0e2!important;--side-dim:#7895aa!important;--accent:#42dfb4!important;--ice:#58cde3!important;--ok:#42dfb4!important;--warm:#f4b76b!important;--bad:#ff7881!important;--font:'DM Sans',system-ui,sans-serif!important;--r:14px!important}.brand{letter-spacing:.02em}.card{box-shadow:none}.btn.primary{color:#04120f}.top{background:#07111f}.side{border-right:1px solid #21394d}body>div:first-of-type:not(.app){background:#102737!important;color:#9cbbce!important;border-color:#244158!important}body>div:first-of-type a{color:#58e3bc!important}h1,h2,h3{font-family:Manrope,'DM Sans',sans-serif}.brand:after{content:' / ColdChain';font-size:10px;color:#58e3bc;letter-spacing:0}</style><link rel="stylesheet" href="/roles.css"><script src="/roles.js"></script></body></html>

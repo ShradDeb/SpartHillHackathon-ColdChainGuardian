@@ -1,0 +1,9 @@
+{
+  "name": "QuickMed Pharmacy",
+  "distance_miles": 3,
+  "travel_minutes": 12,
+  "available_cooling_liters": 25,
+  "synthetic": true,
+  "model": "us.amazon.nova-pro-v1:0",
+  "requestId": "5ff623ca-957a-49ee-b6a1-579f02a7c1e2"
+}

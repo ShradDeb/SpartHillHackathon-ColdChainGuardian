@@ -1,0 +1,11 @@
+const vm=require('vm'),fs=require('fs'),assert=require('assert');
+let click,clear;
+const ctx={facilities:[],finderArea:'Mission District',communityRoute:()=>({}),URLSearchParams,esc:s=>String(s),render:()=>{},document:{querySelector:s=>({addEventListener:(_,fn)=>{if(s==='#nearby-locate')click=fn;else clear=fn}})},navigator:{geolocation:{getCurrentPosition:fn=>fn({coords:{latitude:37.12345,longitude:-122.12345,accuracy:25}})}},fetch:()=>{throw Error('Google Maps fallback must not send coordinates to the server')}};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/nearby.js','utf8'),ctx);
+vm.runInContext('bindNearby()',ctx);click();
+assert(vm.runInContext('nearbyState.located',ctx));
+assert(vm.runInContext('nearbyState.mapsUrl',ctx).includes('37.12345'));
+assert(vm.runInContext('nearestLocationCard()',ctx).includes('Location ready'));
+clear();assert(!vm.runInContext('nearbyState.located',ctx));
+assert(!vm.runInContext('nearbyState.mapsUrl',ctx).includes('37.12345'));
+console.log('Passed: current-location Google Maps URL, no server transmission in fallback, clear location.');

@@ -1,0 +1,212 @@
+[
+  {
+    "id": "g1",
+    "name": "Mission Community Pharmacy",
+    "area": "Mission District",
+    "stock": {
+      "insulin": 18,
+      "semaglutide": 11,
+      "amoxicillin": 14,
+      "epinephrine": 8
+    },
+    "miles": 0.5,
+    "min": 4,
+    "available": false,
+    "generator": false,
+    "power": false,
+    "capacityPercent": 22,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0101",
+    "cooling": 18
+  },
+  {
+    "id": "g2",
+    "name": "Castro Health Pharmacy",
+    "area": "Castro",
+    "stock": {
+      "insulin": 42,
+      "semaglutide": 20,
+      "amoxicillin": 31,
+      "epinephrine": 17
+    },
+    "miles": 1.6,
+    "min": 10,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 74,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0102",
+    "cooling": null
+  },
+  {
+    "id": "g3",
+    "name": "SoMa Care Rx",
+    "area": "SoMa",
+    "stock": {
+      "insulin": 27,
+      "semaglutide": 8,
+      "amoxicillin": 46,
+      "epinephrine": 29
+    },
+    "miles": 2.6,
+    "min": 16,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 61,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0103",
+    "cooling": null
+  },
+  {
+    "id": "g4",
+    "name": "Noe Valley Pharmacy",
+    "area": "Noe Valley",
+    "stock": {
+      "insulin": 12,
+      "semaglutide": 15,
+      "amoxicillin": 9,
+      "epinephrine": 13
+    },
+    "miles": 2.2,
+    "min": 13,
+    "available": true,
+    "generator": true,
+    "power": true,
+    "capacityPercent": 38,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0104",
+    "cooling": null
+  },
+  {
+    "id": "g5",
+    "name": "Potrero Wellness Rx",
+    "area": "Potrero Hill",
+    "stock": {
+      "insulin": 24,
+      "semaglutide": 12,
+      "amoxicillin": 20,
+      "epinephrine": 11
+    },
+    "miles": 2.2,
+    "min": 13,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 66,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0105",
+    "cooling": null
+  },
+  {
+    "id": "g6",
+    "name": "Hayes Valley Pharmacy",
+    "area": "Hayes Valley",
+    "stock": {
+      "insulin": 16,
+      "semaglutide": 26,
+      "amoxicillin": 18,
+      "epinephrine": 21
+    },
+    "miles": 2,
+    "min": 12,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 49,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0106",
+    "cooling": null
+  },
+  {
+    "id": "g7",
+    "name": "Bernal Family Drugs",
+    "area": "Bernal Heights",
+    "stock": {
+      "insulin": 9,
+      "semaglutide": 6,
+      "amoxicillin": 25,
+      "epinephrine": 15
+    },
+    "miles": 2.7,
+    "min": 17,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 57,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0107",
+    "cooling": null
+  },
+  {
+    "id": "g8",
+    "name": "Dogpatch Community Rx",
+    "area": "Dogpatch",
+    "stock": {
+      "insulin": 31,
+      "semaglutide": 17,
+      "amoxicillin": 22,
+      "epinephrine": 18
+    },
+    "miles": 2.8,
+    "min": 17,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 82,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0108",
+    "cooling": null
+  },
+  {
+    "id": "g9",
+    "name": "Sunset Care Pharmacy",
+    "area": "Inner Sunset",
+    "stock": {
+      "insulin": 14,
+      "semaglutide": 9,
+      "amoxicillin": 16,
+      "epinephrine": 20
+    },
+    "miles": 3.5,
+    "min": 21,
+    "available": false,
+    "generator": false,
+    "power": false,
+    "capacityPercent": 28,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0109",
+    "cooling": 31
+  },
+  {
+    "id": "g10",
+    "name": "Marina Health Mart",
+    "area": "Marina",
+    "stock": {
+      "insulin": 19,
+      "semaglutide": 23,
+      "amoxicillin": 12,
+      "epinephrine": 24
+    },
+    "miles": 4.9,
+    "min": 30,
+    "available": true,
+    "generator": false,
+    "power": true,
+    "capacityPercent": 70,
+    "capacity": null,
+    "updated": "Synthetic snapshot",
+    "phone": "(415) 555-0110",
+    "cooling": null
+  }
+]
